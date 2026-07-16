@@ -354,16 +354,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- JSON Input Card -->
-                <div class="card main-card mb-4">
+                       <div class="card main-card mb-4">
                     <div class="card-header card-header-mantis d-flex justify-content-between align-items-center">
                         <span><i class="bi bi-braces me-2"></i>Nhập dữ liệu JSON</span>
-                        <button type="button" class="btn btn-sm btn-light text-primary fw-600"
-                                onclick="loadSampleJson()" title="Tải mẫu JSON vào textarea">
-                            <i class="bi bi-cloud-download me-1"></i>Tải mẫu
-                        </button>
                     </div>
                     <div class="card-body">
                         <label class="form-label small fw-600">
@@ -371,17 +364,32 @@
                         </label>
                         <div class="alert alert-info py-2 px-3 mb-2" style="font-size: 0.82rem; border-radius: 6px; line-height: 1.4;">
                             <i class="bi bi-info-circle-fill me-1"></i>
-                            <strong>Cấu trúc mẫu cơ bản:</strong><br>
-                            <pre class="mb-1 mt-1 p-2 bg-light border rounded font-monospace" style="font-size: 0.78rem; color: #333;">[
+                            <strong>Cấu trúc mẫu đầy đủ thông tin:</strong><br>
+                            <pre class="mb-1 mt-1 p-2 bg-light border rounded font-monospace" style="font-size: 0.78rem; color: #333; max-height: 250px; overflow-y: auto;">[
   {
-    "summary": "Tiêu đề lỗi",
-    "description": "Mô tả chi tiết lỗi",
+    "summary": "Tiêu đề lỗi (bắt buộc)",
+    "description": "Mô tả chi tiết lỗi (bắt buộc)",
     "category_id": 1,
+    "project_id": 0,
+    "handler_id": 0,
     "severity": "minor",
-    "priority": "normal"
+    "priority": "normal",
+    "reproducibility": "always",
+    "eta": "none",
+    "platform": "PC",
+    "os": "Windows 11",
+    "os_build": "23H2",
+    "version": "1.0",
+    "build": "",
+    "due_date": "",
+    "status": "new",
+    "resolution": "open",
+    "view_state": "public",
+    "steps_to_reproduce": "Các bước tái hiện...",
+    "additional_info": "Thông tin thêm...",
+    "tag_string": "tag1, tag2"
   }
 ]</pre>
-                            <span>Hoặc bấm nút <strong>"Tải mẫu"</strong> ở thanh tiêu đề góc phải để tải sẵn bộ dữ liệu mẫu đầy đủ.</span>
                         </div>
                         <textarea id="jsonTextarea" class="form-control font-monospace json-textarea"
                                   rows="14" spellcheck="false"
