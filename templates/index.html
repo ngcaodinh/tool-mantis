@@ -764,26 +764,49 @@
                             Dán JSON vào ô bên dưới (mảng các object, hoặc một object duy nhất)
                         </label>
                         <div class="alert alert-info py-2 px-3 mb-2" style="font-size: 0.82rem; border-radius: 6px; line-height: 1.4;">
-                            <i class="bi bi-info-circle-fill me-1"></i>
-                            <strong>Cấu trúc mẫu đầy đủ thông tin:</strong><br>
-                            <pre class="mb-1 mt-1 p-2 bg-light border rounded font-monospace" style="font-size: 0.78rem; color: #333; max-height: 200px; overflow-y: auto;">[
+                            <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-1">
+                                <div>
+                                    <i class="bi bi-info-circle-fill me-1"></i>
+                                    <strong>Cấu trúc mẫu đầy đủ thông tin:</strong>
+                                    <span class="text-muted">(giống <code>samples/sample_test.json</code> — Project &amp; Category chọn trên form, không ghi trong JSON)</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            id="btnCopyStructure"
+                                            onclick="copyElementText('sampleStructurePre', this, 'Đã copy cấu trúc mẫu JSON')"
+                                            title="Copy cấu trúc mẫu JSON">
+                                        <i class="bi bi-clipboard me-1"></i>Copy mẫu
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            onclick="copySampleFullJson(this)"
+                                            title="Copy toàn bộ sample_test (5 issue)">
+                                        <i class="bi bi-clipboard-check me-1"></i>Copy full sample
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-mantis"
+                                            onclick="loadSampleJson(); showToast('Đã nạp full sample vào ô JSON', 'success');"
+                                            title="Nạp full sample vào ô nhập JSON">
+                                        <i class="bi bi-download me-1"></i>Nạp vào ô JSON
+                                    </button>
+                                </div>
+                            </div>
+                            <pre id="sampleStructurePre" class="mb-1 mt-1 p-2 bg-light border rounded font-monospace position-relative" style="font-size: 0.78rem; color: #333; max-height: 280px; overflow-y: auto;">[
   {
-    "summary": "Tiêu đề lỗi (bắt buộc)",
-    "description": "Mô tả chi tiết lỗi (bắt buộc)",
-    "severity": "minor",
-    "priority": "normal",
+    "summary": "Lọc View Issues theo tag không trả về kết quả dù issue có tag",
+    "description": "Khi gắn tag 'regression' cho issue và lọc View Issues theo tag đó, danh sách trống. Issue vẫn hiện khi bỏ filter tag. Dữ liệu tag trong DB vẫn còn.",
+    "severity": "major",
+    "priority": "high",
     "reproducibility": "always",
-    "eta": "none",
-    "platform": "PC",
+    "eta": "&lt; 1 day",
+    "platform": "Web",
     "os": "Windows 11",
     "os_build": "23H2",
-    "due_date": "",
+    "due_date": "2026-07-21",
     "status": "new",
     "resolution": "open",
     "view_state": "public",
-    "steps_to_reproduce": "Các bước tái hiện...",
-    "additional_info": "Thông tin thêm...",
-    "tag_string": "tag1, tag2"
+    "steps_to_reproduce": "1. Mở một issue bất kỳ.\n2. Gắn tag regression.\n3. Vào View Issues.\n4. Filter theo tag = regression.\n5. Quan sát: danh sách rỗng dù issue vừa gắn tag.",
+    "additional_info": "Tái hiện trên Chrome và Edge. Filter theo status/category vẫn hoạt động bình thường.",
+    "tag_string": "filter, tag, view-issues"
   }
 ]</pre>
                             <details class="mt-2">
@@ -791,7 +814,15 @@
                                     <i class="bi bi-chevron-down me-1"></i>Xem mô tả chi tiết tất cả các trường (Copy đưa cho AI sinh JSON)
                                 </summary>
                                 <div class="mt-2 p-2 bg-light border rounded small" style="font-size: 0.75rem; max-height: 250px; overflow-y: auto; line-height: 1.5;">
-                                    <strong class="text-dark">1. Trường bắt buộc:</strong>
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                        <strong class="text-dark mb-0">1. Trường bắt buộc:</strong>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary py-0"
+                                                onclick="copyElementText('fieldDocsBlock', this, 'Đã copy mô tả các trường')"
+                                                title="Copy toàn bộ mô tả field">
+                                            <i class="bi bi-clipboard me-1"></i>Copy mô tả field
+                                        </button>
+                                    </div>
+                                    <div id="fieldDocsBlock">
                                     <ul class="mb-2 ps-3">
                                         <li><code>summary</code> (String): Tiêu đề lỗi.</li>
                                         <li><code>description</code> (String): Mô tả chi tiết lỗi.</li>
@@ -812,9 +843,17 @@
                                         <li><code>tag_string</code> (String): Danh sách tags (phân cách bằng dấu phẩy).</li>
                                         <li><code>custom_field_&lt;id&gt;</code> (String): Custom Field (ví dụ: <code>custom_field_1</code>).</li>
                                     </ul>
+                                    </div>
                                     <div class="mt-2 pt-2 border-top">
-                                        <strong class="text-primary">💡 Nhấp vào ô dưới để Copy nhanh câu lệnh Prompt đưa cho AI sinh JSON:</strong>
-                                        <textarea class="form-control form-control-sm mt-1 bg-white font-monospace" style="font-size:0.72rem; cursor:pointer;" rows="6" readonly onclick="copyPromptToClipboard(this)">Hãy sinh ra dữ liệu JSON dùng để import lỗi vào hệ thống MantisBT theo cấu trúc danh sách (array of objects). Mỗi phần tử biểu diễn một lỗi (issue) và chỉ được sử dụng các trường dữ liệu sau:
+                                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+                                            <strong class="text-primary mb-0">💡 Prompt đưa cho AI sinh JSON:</strong>
+                                            <button type="button" class="btn btn-sm btn-outline-primary py-0"
+                                                    onclick="copyElementText('aiPromptText', this, 'Đã copy prompt AI')"
+                                                    title="Copy prompt AI">
+                                                <i class="bi bi-clipboard me-1"></i>Copy prompt
+                                            </button>
+                                        </div>
+                                        <textarea id="aiPromptText" class="form-control form-control-sm mt-1 bg-white font-monospace" style="font-size:0.72rem;" rows="6" readonly>Hãy sinh ra dữ liệu JSON dùng để import lỗi vào hệ thống MantisBT theo cấu trúc danh sách (array of objects). Mỗi phần tử biểu diễn một lỗi (issue) và chỉ được sử dụng các trường dữ liệu sau:
 - summary (String): Tiêu đề lỗi (bắt buộc)
 - description (String): Mô tả chi tiết lỗi (bắt buộc)
 - severity (String/Int): Độ nghiêm trọng ("feature", "trivial", "text", "tweak", "minor", "major", "crash", "block")
@@ -829,7 +868,8 @@
 - view_state (String/Int): Hiển thị ("public", "private")
 - steps_to_reproduce (String): Các bước tái hiện (\n để xuống dòng)
 - additional_info (String): Thông tin thêm
-- tag_string (String): Các tags (cách nhau bởi dấu phẩy)</textarea>
+- tag_string (String): Các tags (cách nhau bởi dấu phẩy)
+Không dùng project_id / category_id (user đã chọn trên UI tool import).</textarea>
                                     </div>
                                 </div>
                             </details>
@@ -842,6 +882,15 @@
                             <button type="button" class="btn btn-outline-mantis btn-sm"
                                     onclick="applyTextareaJson()">
                                 <i class="bi bi-check2-circle me-1"></i>Áp dụng JSON
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="copyElementText('jsonTextarea', this, 'Đã copy nội dung ô JSON')"
+                                    title="Copy nội dung đang có trong ô JSON">
+                                <i class="bi bi-clipboard me-1"></i>Copy JSON
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    onclick="loadSampleJson()">
+                                <i class="bi bi-file-earmark-code me-1"></i>Load sample
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm"
                                     onclick="clearTextarea()">
@@ -1093,7 +1142,7 @@ let jsonContent = '';
 
 // Force reload on script version change (avoid stale browser cache)
 (function() {
-    const SCRIPT_VERSION = 'v20260716-overlay-import-2';
+    const SCRIPT_VERSION = 'v20260716-copy-buttons-1';
     const stored = sessionStorage.getItem('script_version');
     if (stored && stored !== SCRIPT_VERSION) {
         sessionStorage.setItem('script_version', SCRIPT_VERSION);
@@ -2298,13 +2347,83 @@ function resetToPhase1() {
 }
 
 function copyPromptToClipboard(el) {
-    el.select();
-    try {
-        document.execCommand('copy');
-        showToast('Đã copy câu lệnh Prompt vào bộ nhớ tạm (Clipboard)!', 'success');
-    } catch (err) {
-        showToast('Không thể copy tự động, vui lòng chọn và Ctrl+C thủ công.', 'warning');
+    // Tương thích cũ: copy từ textarea được click
+    if (el && (el.value != null)) {
+        copyText(el.value, null, 'Đã copy câu lệnh Prompt vào bộ nhớ tạm!');
+        return;
     }
+    copyElementText('aiPromptText', null, 'Đã copy prompt AI');
+}
+
+/** Copy text thuần ra clipboard; flash nút nếu có */
+async function copyText(text, btnEl, successMsg) {
+    const value = (text == null ? '' : String(text)).replace(/\u00a0/g, ' ').trimEnd();
+    if (!value) {
+        showToast('Không có nội dung để copy', 'warning');
+        return false;
+    }
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(value);
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = value;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (!ok) throw new Error('execCommand failed');
+        }
+        showToast(successMsg || 'Đã copy vào clipboard!', 'success');
+        if (btnEl) {
+            const prev = btnEl.innerHTML;
+            btnEl.classList.add('btn-success');
+            btnEl.classList.remove('btn-outline-primary', 'btn-outline-secondary', 'btn-outline-mantis');
+            btnEl.innerHTML = '<i class="bi bi-check2 me-1"></i>Đã copy';
+            setTimeout(() => {
+                btnEl.innerHTML = prev;
+                btnEl.classList.remove('btn-success');
+                // restore common outline styles if lost
+                if (!btnEl.className.includes('btn-outline') && !btnEl.className.includes('btn-mantis')) {
+                    btnEl.classList.add('btn-outline-primary');
+                }
+            }, 1600);
+        }
+        return true;
+    } catch (err) {
+        showToast('Không copy được. Hãy chọn text và Ctrl+C.', 'warning');
+        return false;
+    }
+}
+
+/** Copy text từ element theo id (pre / textarea / input / div) */
+async function copyElementText(elementId, btnEl, successMsg) {
+    const el = document.getElementById(elementId);
+    if (!el) {
+        showToast('Không tìm thấy nội dung cần copy', 'error');
+        return false;
+    }
+    let text = '';
+    if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+        text = el.value;
+    } else {
+        // pre/div: lấy textContent (HTML entities đã decode)
+        text = el.innerText || el.textContent || '';
+    }
+    return copyText(text, btnEl, successMsg);
+}
+
+/** Copy full SAMPLE_JSON (5 issue như sample_test.json) */
+async function copySampleFullJson(btnEl) {
+    if (typeof SAMPLE_JSON === 'undefined') {
+        showToast('SAMPLE_JSON chưa sẵn sàng', 'error');
+        return;
+    }
+    const text = JSON.stringify(SAMPLE_JSON, null, 2);
+    await copyText(text, btnEl, 'Đã copy full sample JSON (5 issue)');
 }
 
 // ===== Initial state =====
