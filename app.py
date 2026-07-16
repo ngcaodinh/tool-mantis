@@ -34,7 +34,7 @@ def get_client(session_id: str) -> MantisBTClient | None:
     return _active_clients.get(session_id)
 
 
-def parse_json(json_text: str) -> tuple:
+def parse_json(json_text: str, default_category_id: str = '') -> tuple:
     try:
         data = json.loads(json_text)
     except json.JSONDecodeError as e:
@@ -50,6 +50,11 @@ def parse_json(json_text: str) -> tuple:
         if not isinstance(item, dict):
             errors.append(f'Phần tử #{i}: Không phải object')
             continue
+        
+        # Điền category_id mặc định từ UI nếu trong JSON không có hoặc trống
+        if ('category_id' not in item or not str(item['category_id']).strip() or str(item['category_id']) == '0') and default_category_id and default_category_id != '0':
+            item['category_id'] = default_category_id
+
         for col in REQUIRED_COLUMNS:
             if col not in item or not str(item[col]).strip():
                 errors.append(f'Phần tử #{i}: Thiếu trường bắt buộc "{col}"')
@@ -110,6 +115,21 @@ def fetch_projects():
     return jsonify(result)
 
 
+@app.route('/api/categories', methods=['POST'])
+def fetch_categories():
+    data = request.get_json() or {}
+    session_id = data.get('session_id', '').strip()
+    project_id = str(data.get('project_id', '')).strip()
+    if not session_id or session_id not in _active_clients:
+        return jsonify({'success': False, 'message': 'Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại', 'categories': []})
+    if not project_id:
+        return jsonify({'success': False, 'message': 'Thiếu Project ID', 'categories': []})
+
+    client = _active_clients[session_id]
+    result = client.fetch_categories(project_id)
+    return jsonify(result)
+
+
 @app.route('/api/logout', methods=['POST'])
 def logout():
     data = request.get_json() or {}
@@ -141,6 +161,7 @@ def import_bugs():
     delay = float(data.get('delay', DEFAULT_DELAY))
     session_id = data.get('session_id', '')
     project_id = str(data.get('project_id', '0')).strip()
+    category_id = str(data.get('category_id', '0')).strip()
 
     # Get or create client
     if session_id and session_id in _active_clients:
@@ -175,7 +196,7 @@ def import_bugs():
         yield _sse({'type': 'status', 'message': 'Đăng nhập thành công', 'step': 'parse'})
 
         # Parse JSON
-        rows, parse_errors = parse_json(json_data)
+        rows, parse_errors = parse_json(json_data, category_id)
         if parse_errors:
             for err in parse_errors:
                 yield _sse({'type': 'error', 'message': err})

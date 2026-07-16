@@ -542,6 +542,35 @@ class MantisBTClient:
         except Exception as e:
             return {'success': False, 'bug_id': None, 'error': str(e)}
 
+    def fetch_categories(self, project_id: str) -> dict:
+        try:
+            url = f'{self.base_url}/bug_report_page.php?project_id={project_id}'
+            resp = self.session.get(url, timeout=15)
+            if resp.status_code != 200:
+                return {'success': False, 'message': f'HTTP {resp.status_code}'}
+            
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            select_el = soup.find('select', {'name': 'category_id'})
+            if not select_el:
+                select_el = soup.find('select', id='category_id')
+            
+            categories = []
+            if select_el:
+                for opt in select_el.find_all('option'):
+                    val = opt.get('value', '').strip()
+                    txt = opt.get_text().strip()
+                    if not val or val == '0' or any(kw in txt.lower() for kw in ['select', 'chọn', 'choose', '--']):
+                        continue
+                    categories.append({'id': val, 'name': txt})
+            
+            return {
+                'success': True,
+                'categories': categories,
+                'message': f'Tải thành công {len(categories)} category'
+            }
+        except Exception as e:
+            return {'success': False, 'message': str(e), 'categories': []}
+
     def delete_session(self):
         path = self._session_file_path()
         for f in [path, path.replace('.json', '_meta.json')]:

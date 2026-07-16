@@ -340,6 +340,21 @@
                                 </select>
                                 <div id="projectsError" class="small text-danger mt-1 d-none"></div>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    * Category (Danh mục lỗi)
+                                    <button type="button" class="btn btn-sm btn-link p-0 ms-1 align-baseline"
+                                            onclick="reloadCategories()" id="btnReloadCategories"
+                                            title="Tải lại danh sách category" disabled>
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                    <span class="spinner-inline-sm d-none ms-1" id="categoriesSpinner"></span>
+                                </label>
+                                <select class="form-select" id="mantisCategory" disabled>
+                                    <option value="0">— Chọn Project để tải category —</option>
+                                </select>
+                                <div id="categoriesError" class="small text-danger mt-1 d-none"></div>
+                            </div>
                             <div class="col-12">
                                 <div id="connStatus" class="d-none"></div>
                             </div>
@@ -633,6 +648,7 @@ let jsonContent = '';
     }
 })();
 let selectedProjectId = '0';
+let selectedCategoryId = '0';
 
 // ===== Phase Navigation =====
 function showPhase(n) {
@@ -761,6 +777,7 @@ function populateProjects(projects, projectsError) {
 
     sel.value = projects[0].id;
     selectedProjectId = projects[0].id;
+    reloadCategories();
 }
 
 async function reloadProjects() {
@@ -781,6 +798,76 @@ async function reloadProjects() {
         else showToast(data.message || 'Không lấy được danh sách project', 'warning');
     } catch (e) {
         showToast('Lỗi khi tải lại project: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+}
+
+// ===== Categories Dropdown =====
+function populateCategories(categories, categoriesError) {
+    const sel = document.getElementById('mantisCategory');
+    const btnReload = document.getElementById('btnReloadCategories');
+    const errEl = document.getElementById('categoriesError');
+
+    sel.innerHTML = '';
+    if (!categories || categories.length === 0) {
+        sel.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '0';
+        opt.textContent = '— Không có category nào để chọn —';
+        sel.appendChild(opt);
+        btnReload.disabled = true;
+        if (categoriesError) {
+            errEl.textContent = categoriesError;
+            errEl.classList.remove('d-none');
+        } else {
+            errEl.classList.add('d-none');
+        }
+        selectedCategoryId = '0';
+        return;
+    }
+
+    sel.disabled = false;
+    btnReload.disabled = false;
+    errEl.classList.add('d-none');
+
+    // Mặc định thêm lựa chọn "Mặc định / Tự chọn"
+    const defOpt = document.createElement('option');
+    defOpt.value = '0';
+    defOpt.textContent = '— Chọn Category mặc định (Tùy chọn) —';
+    sel.appendChild(defOpt);
+
+    categories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (ID ${c.id})`;
+        sel.appendChild(opt);
+    });
+
+    sel.value = '0';
+    selectedCategoryId = '0';
+}
+
+async function reloadCategories() {
+    if (!sessionId) { showToast('Bạn cần đăng nhập trước', 'warning'); return; }
+    if (!selectedProjectId || selectedProjectId === '0') { return; }
+    const btn = document.getElementById('btnReloadCategories');
+    const spinner = document.getElementById('categoriesSpinner');
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    try {
+        const resp = await fetch('/api/categories', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ session_id: sessionId, project_id: selectedProjectId })
+        });
+        const data = await resp.json();
+        populateCategories(data.categories || [], data.message);
+        if (data.success) showToast(`Đã tải ${data.categories.length} category`, 'success');
+        else showToast(data.message || 'Không lấy được danh sách category', 'warning');
+    } catch (e) {
+        showToast('Lỗi khi tải lại category: ' + e.message, 'error');
     } finally {
         btn.disabled = false;
         spinner.classList.add('d-none');
@@ -808,12 +895,14 @@ async function logout() {
         // Always reset client-side state, even if backend call failed
         sessionId = '';
         selectedProjectId = '0';
+        selectedCategoryId = '0';
         document.getElementById('mantisPass').value = '';
         document.getElementById('btnLogout').disabled = true;
         document.getElementById('btnStart').disabled = true;
         document.getElementById('startHint').classList.remove('d-none');
         document.getElementById('connStatus').className = 'd-none';
         populateProjects([], '');
+        populateCategories([], '');
         showPhase(1);
     }
 }
@@ -1075,13 +1164,17 @@ function formatSize(bytes) {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function renderPreview(text) {
+function renderPreview(textOrData) {
     let data;
-    try {
-        data = JSON.parse(text);
-    } catch(e) {
-        showToast('JSON không hợp lệ: ' + e.message, 'error');
-        return;
+    if (typeof textOrData === 'string') {
+        try {
+            data = JSON.parse(textOrData);
+        } catch(e) {
+            showToast('JSON không hợp lệ: ' + e.message, 'error');
+            return;
+        }
+    } else {
+        data = textOrData;
     }
 
     if (!Array.isArray(data)) data = [data];
@@ -1172,7 +1265,8 @@ async function startImport() {
                     json_data: jsonContent,
                     delay,
                     session_id: sessionId,
-                    project_id: projectId
+                    project_id: projectId,
+                    category_id: selectedCategoryId
                 })
         });
 
@@ -1335,6 +1429,7 @@ function resetToPhase1() {
     jsonContent = '';
     sessionId = '';
     selectedProjectId = '0';
+    selectedCategoryId = '0';
     allResults = [];
     document.getElementById('jsonTextarea').value = '';
     document.getElementById('jsonTextarea').classList.remove('is-valid', 'is-invalid');
@@ -1343,8 +1438,9 @@ function resetToPhase1() {
     document.getElementById('connStatus').className = 'd-none';
     document.getElementById('btnStart').disabled = true;
     document.getElementById('startHint').classList.remove('d-none');
-    // Reset project dropdown
+    // Reset project & category dropdowns
     populateProjects([], '');
+    populateCategories([], '');
     showPhase(1);
 }
 
@@ -1353,6 +1449,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-populate URL if already has a value
     const urlInput = document.getElementById('mantisUrl');
     if (urlInput.value) mantisUrl = urlInput.value;
+
+    // Listeners for projects and categories dropdowns
+    document.getElementById('mantisProject').addEventListener('change', (e) => {
+        selectedProjectId = e.target.value;
+        reloadCategories();
+    });
+    
+    document.getElementById('mantisCategory').addEventListener('change', (e) => {
+        selectedCategoryId = e.target.value;
+    });
 });
 </script>
 </body>
