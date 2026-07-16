@@ -1,22 +1,41 @@
 [
   {
-    "summary": "Mẫu test 1: Lỗi hiển thị font chữ trên trang chủ",
-    "description": "Mô tả chi tiết: Font chữ tiêu đề trang chủ bị lỗi hiển thị thành Times New Roman thay vì Roboto.",
-    "severity": "minor",
-    "priority": "low",
-    "platform": "Chrome",
-    "os": "Windows 11",
-    "steps_to_reproduce": "1. Mở trang chủ\n2. Xem font chữ tiêu đề",
-    "tag_string": "ui, cosmetic"
-  },
-  {
-    "summary": "Mẫu test 2: Không thể nhấn nút Đăng ký khi điền đủ form",
-    "description": "Mô tả chi tiết: Khi nhập đầy đủ thông tin hợp lệ vào form đăng ký, nút Submit vẫn bị disable không bấm được.",
+    "summary": "Lỗi 1: Không thể tải ảnh đại diện lên máy chủ",
+    "description": "Mô tả chi tiết: Khi người dùng vào trang cá nhân và chọn thay đổi ảnh đại diện bằng tệp tin hình ảnh (.jpg, .png), hệ thống phản hồi lỗi 'Không thể lưu tệp tin'. Kiểm tra thấy dung lượng ảnh chỉ 1MB.",
     "severity": "major",
     "priority": "high",
-    "platform": "Firefox",
-    "os": "macOS",
-    "steps_to_reproduce": "1. Vào trang đăng ký\n2. Nhập đầy đủ thông tin hợp lệ\n3. Quan sát nút Đăng ký",
-    "tag_string": "auth, bug"
+    "reproducibility": "always",
+    "eta": "< 1 day",
+    "platform": "Web",
+    "os": "Windows 11",
+    "os_build": "23H2",
+    "version": "1.2.0",
+    "build": "b20260716",
+    "due_date": "2026-07-20",
+    "status": "new",
+    "resolution": "open",
+    "view_state": "public",
+    "steps_to_reproduce": "1. Đăng nhập vào hệ thống.\n2. Truy cập vào trang 'Hồ sơ cá nhân'.\n3. Click nút 'Thay đổi ảnh đại diện'.\n4. Chọn một file ảnh hợp lệ từ máy tính và nhấn 'Lưu'.\n5. Quan sát thông báo lỗi xuất hiện trên màn hình.",
+    "additional_info": "Lỗi này chỉ xảy ra trên môi trường Production, môi trường Staging chạy bình thường. Có thể do phân quyền thư mục lưu trữ hình ảnh.",
+    "tag_string": "profile, upload, major-bug"
+  },
+  {
+    "summary": "Lỗi 2: Tràn chữ ở footer khi thu nhỏ màn hình xuống 320px",
+    "description": "Mô tả chi tiết: Phần thông tin bản quyền và liên hệ ở chân trang (footer) bị vỡ dòng và đè lên nhau khi xem ở kích thước màn hình thiết bị di động cực nhỏ (320px).",
+    "severity": "minor",
+    "priority": "low",
+    "reproducibility": "always",
+    "eta": "2-3 days",
+    "platform": "Mobile Web",
+    "os": "iOS 17",
+    "version": "1.2.0",
+    "build": "b20260716",
+    "due_date": "2026-07-25",
+    "status": "new",
+    "resolution": "open",
+    "view_state": "public",
+    "steps_to_reproduce": "1. Mở trang chủ bằng trình duyệt Safari trên iPhone SE.\n2. Cuộn xuống phần cuối cùng của trang.\n3. Quan sát hiển thị của dòng chữ bản quyền.",
+    "additional_info": "Cần thêm thuộc tính CSS flex-wrap hoặc giảm font-size của footer trên màn hình nhỏ.",
+    "tag_string": "ui, responsive, cosmetic"
   }
 ]
