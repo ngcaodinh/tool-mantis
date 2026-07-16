@@ -1,130 +1,187 @@
 # MantisBT Bulk Bug Import Tool
 
-MantisBT Bulk Bug Import Tool là một ứng dụng web Flask giúp bạn nhanh chóng import hàng loạt báo cáo lỗi (bugs/issues) vào hệ thống Mantis Bug Tracker thông qua giao diện Web trực quan. 
+Ứng dụng web **Flask** giúp import hàng loạt issue/bug vào **Mantis Bug Tracker** (đã kiểm tra với MantisBT **2.25.x**) qua form web *Enter Issue Details*, không cần REST API.
 
-Ứng dụng hỗ trợ kiểm tra kết nối, tự động lấy danh sách dự án (projects), kiểm tra tính hợp lệ của dữ liệu trước khi import và thực hiện gửi yêu cầu tuần tự để tránh quá tải hệ thống.
-
----
-
-## 🌟 Tính năng chính
-
-- **Đăng nhập & Quản lý Session:** Tự động duy trì trạng thái đăng nhập qua cookie. Đồng thời tự động dọn dẹp thư mục `sessions/` (giới hạn tối đa 5 file phiên làm việc mới nhất) để tiết kiệm dung lượng đĩa.
-- **Kiểm tra kết nối (Test Connection):** Kiểm tra xem URL MantisBT có hoạt động hay không trước khi thực hiện import.
-- **Tự động lấy danh sách dự án:** Sau khi đăng nhập thành công, hệ thống tự động tải và hiển thị danh sách các dự án khả dụng trên MantisBT.
-- **Import hàng loạt:** Hỗ trợ nhập dữ liệu dạng JSON.
-- **Kiểm tra dữ liệu đầu vào:** Xác thực các trường bắt buộc và định dạng của dữ liệu trước khi gửi đi.
+Hỗ trợ đăng nhập, chọn Project/Category trên UI, dán hoặc nạp JSON, theo dõi progress realtime (overlay + bảng kết quả), và tạo issue tuần tự để tránh quá tải server.
 
 ---
 
-## 🛠️ Yêu cầu hệ thống
+## Tính năng chính
 
-- **Python:** Phiên bản 3.8 trở lên.
-- **MantisBT:** Hệ thống Mantis Bug Tracker của bạn.
+- **Đăng nhập & session:** Giữ cookie Mantis, lưu session tạm trong `sessions/` (tự dọn, tối đa ~5 file).
+- **Test connection:** Kiểm tra URL + đăng nhập trước khi import.
+- **Project & Category:** Tự load project; category **theo project đã chọn** (giống form Report Issue).
+- **Import JSON hàng loạt:** Stream SSE — progress bar, ô “đang xử lý”, bảng kết quả realtime.
+- **Overlay import:** Popup full màn khi bấm Import (không chỉ toast nhỏ).
+- **CSRF & success detect:** Lấy `bug_report_token` mỗi lần submit; nhận issue ID từ trang *Operation successful / View Submitted Issue* (HTTP 200), không chỉ 302.
+- **Copy nhanh trên UI:** Copy mẫu JSON, full sample, prompt AI, mô tả field, nội dung ô JSON.
+- **Kiểm tra JSON:** Bắt buộc `summary` + `description` trước khi gửi.
 
 ---
 
-## 🚀 Hướng dẫn cài đặt và chạy trên Windows (CMD)
+## Yêu cầu
 
-### Bước 1: Mở Command Prompt (cmd)
-Nhấn phím `Windows`, nhập `cmd` và nhấn `Enter`.
+| Thành phần | Ghi chú |
+|------------|---------|
+| Python | 3.8+ |
+| MantisBT | 2.x (khuyến nghị 2.25.x) |
+| Trình duyệt | Chrome / Edge / Firefox |
 
-### Bước 2: Di chuyển vào thư mục dự án
-Chuyển đến thư mục chứa mã nguồn:
+---
+
+## Cài đặt & chạy (Windows)
+
 ```cmd
 cd /d "d:\CODE\Tool Manitis\mantisbt-import"
-```
 
-### Bước 3: Khởi tạo và kích hoạt môi trường ảo (Khuyến nghị)
-Tạo môi trường ảo độc lập để tránh xung đột thư viện:
-```cmd
 python -m venv venv
 venv\Scripts\activate
-```
 
-### Bước 4: Cài đặt các thư viện phụ thuộc
-Cài đặt tất cả các thư viện cần thiết bằng tệp `requirements.txt`:
-```cmd
 pip install -r requirements.txt
-```
-
-### Bước 5: Chạy ứng dụng Flask
-Khởi chạy ứng dụng bằng câu lệnh:
-```cmd
 python app.py
 ```
-Sau khi khởi chạy thành công, màn hình sẽ hiển thị:
-```text
- * Running on http://127.0.0.1:5030
-```
 
-### Bước 6: Truy cập giao diện
-Mở trình duyệt web của bạn và truy cập địa chỉ:
-👉 **[http://localhost:5030](http://localhost:5030)**
+Mở trình duyệt:
+
+- **http://localhost:5030**
+- hoặc **http://127.0.0.1:5030**
+
+Cổng mặc định: **5030** (`config.py`).
 
 ---
 
-## 📊 Định dạng dữ liệu Import (JSON)
+## Cách dùng nhanh
 
-Dữ liệu JSON cần là một mảng các đối tượng (array of objects) hoặc một đối tượng duy nhất có các trường sau:
+1. Nhập **URL Mantis** (vd. `http://localhost/mantisbt-2.25.5`).
+2. Nhập **username / password** → **Kiểm tra kết nối**.
+3. Chọn **Project** → chọn **Category** (dropdown chỉ category của project đó).
+4. Dán JSON, hoặc:
+   - **Load sample** / **Nạp vào ô JSON**
+   - **Copy mẫu** / **Copy full sample**
+5. **Áp dụng JSON** (xem trước) → **Bắt đầu Import**.
+6. Theo dõi overlay progress + bảng kết quả → **Mở MantisBT** / **Import tiếp**.
 
-### Các trường bắt buộc
-- `summary` (string): Tiêu đề ngắn gọn của lỗi.
-- `description` (string): Mô tả chi tiết về lỗi.
+> **Project** và **Category** chọn trên form UI. Không cần (và không nên) ghi `project_id` / `category_id` trong JSON mẫu mặc định.
 
-### Các trường tùy chọn
-- `category_id` (string/int/numeric): ID của phân loại (ví dụ: `1` cho General). Trường này là tùy chọn nếu bạn đã lựa chọn Category từ menu thả xuống trên giao diện web.
-- `severity` (string/int): Độ nghiêm trọng (ví dụ: `minor`, `major`, `crash`, `block`, hoặc các mã số tương ứng).
-- `priority` (string/int): Mức độ ưu tiên (ví dụ: `low`, `normal`, `high`, `urgent`, `immediate`).
-- `platform` (string): Nền tảng gặp lỗi (ví dụ: `PC`, `Android`, `iOS`).
-- `os` (string): Hệ điều hành (ví dụ: `Windows 11`, `macOS`).
-- `os_build` (string): Bản build của hệ điều hành.
-- `version` (string): Phiên bản phần mềm.
-- `handler_id` (int): ID của user được phân công xử lý.
-- `steps_to_reproduce` (string): Các bước tái hiện lỗi.
-- `additional_info` (string): Thông tin bổ sung.
-- `view_state` (string/int): Trạng thái hiển thị (`public` hoặc `private`).
-- `project_id` (int): ID của dự án (nếu không chọn từ danh sách trên giao diện).
-- `tags` (string): Danh sách tag, phân cách bằng dấu phẩy (ví dụ: `bug, ui, critical`).
+---
 
-#### Ví dụ mẫu JSON:
+## Định dạng JSON
+
+### Bắt buộc
+
+| Field | Kiểu | Mô tả |
+|-------|------|--------|
+| `summary` | string | Tiêu đề issue |
+| `description` | string | Mô tả chi tiết |
+
+### Tùy chọn (khớp form Enter Issue Details)
+
+| Field | Ví dụ | Ghi chú |
+|-------|--------|---------|
+| `severity` | `minor`, `major`, `crash`, `block`… | Hoặc số enum Mantis |
+| `priority` | `low`, `normal`, `high`, `urgent`… | |
+| `reproducibility` | `always`, `sometimes`, `random`… | |
+| `eta` | `none`, `< 1 day`, `2-3 days`… | |
+| `platform` | `Web`, `Mobile Web`, `API`… | |
+| `os` | `Windows 11`, `iOS 17`… | |
+| `os_build` | `23H2` | |
+| `due_date` | `2026-07-21` hoặc `""` | `YYYY-MM-DD` |
+| `status` | `new` | |
+| `resolution` | `open` | |
+| `view_state` | `public`, `private` | |
+| `steps_to_reproduce` | text, `\n` xuống dòng | |
+| `additional_info` | text | |
+| `tag_string` | `filter, tag, ui` | Tags, cách nhau bởi dấu phẩy |
+
+**Có thể có thêm** (nâng cao): `category_id`, `project_id`, `handler_id`, `product_version`, `build`, `target_version`, `monitors`, `tags` (alias `tag_string`) — chỉ dùng khi biết đúng ID/tên trên Mantis.
+
+**Lưu ý:**
+
+- Để trống `product_version` nếu project **chưa có version** đó (Mantis báo *Invalid value for version*).
+- `monitors: []` hợp lệ (mảng rỗng).
+- Timezone hiển thị ngày trên Mantis phụ thuộc `config_inc.php` (`$g_default_timezone`, khuyến nghị `Asia/Ho_Chi_Minh` nếu dùng ở VN).
+
+### Ví dụ (giống `samples/sample_test.json`)
+
 ```json
 [
   {
-    "summary": "Lỗi giao diện không hiển thị nút Đăng nhập trên mobile",
-    "description": "Khi truy cập bằng iPhone 13, nút Đăng nhập bị tràn viền và ẩn đi hoàn toàn.",
-    "category_id": "1",
+    "summary": "Lọc View Issues theo tag không trả về kết quả dù issue có tag",
+    "description": "Khi gắn tag 'regression' cho issue và lọc View Issues theo tag đó, danh sách trống. Issue vẫn hiện khi bỏ filter tag. Dữ liệu tag trong DB vẫn còn.",
     "severity": "major",
     "priority": "high",
-    "platform": "iOS",
-    "os": "iOS 16",
-    "tags": "mobile, ui"
-  },
-  {
-    "summary": "Không thể tải lên tệp tin đính kèm định dạng .xlsx",
-    "description": "Khi chọn file excel, hệ thống báo lỗi không xác định dù dung lượng nhỏ hơn 2MB.",
-    "category_id": "1",
-    "severity": "minor",
-    "priority": "normal"
+    "reproducibility": "always",
+    "eta": "< 1 day",
+    "platform": "Web",
+    "os": "Windows 11",
+    "os_build": "23H2",
+    "due_date": "2026-07-21",
+    "status": "new",
+    "resolution": "open",
+    "view_state": "public",
+    "steps_to_reproduce": "1. Mở một issue bất kỳ.\n2. Gắn tag regression.\n3. Vào View Issues.\n4. Filter theo tag = regression.\n5. Quan sát: danh sách rỗng dù issue vừa gắn tag.",
+    "additional_info": "Tái hiện trên Chrome và Edge. Filter theo status/category vẫn hoạt động bình thường.",
+    "tag_string": "filter, tag, view-issues"
   }
 ]
 ```
 
+File mẫu đầy đủ (5 issue): [`samples/sample_test.json`](samples/sample_test.json).
+
 ---
 
-## 📁 Cấu trúc thư mục dự án
+## Cấu trúc thư mục
 
 ```text
 mantisbt-import/
-│
-├── app.py             # File khởi chạy Flask App chính và các API endpoint
-├── config.py          # Cấu hình cổng chạy, thư mục session, danh sách cột bắt buộc/tùy chọn
-├── mantis_client.py   # Lớp client xử lý HTTP request, cookie session, cào token CSRF và đăng lỗi
-├── requirements.txt   # Danh sách các thư viện Python cần cài đặt
-├── .gitignore         # File cấu hình bỏ qua các tệp không cần thiết khi đẩy lên Git
-├── README.md          # Tài liệu hướng dẫn sử dụng (File này)
-│
+├── app.py                 # Flask app + API (test-connection, projects, categories, import SSE)
+├── config.py              # HOST, PORT, session dir, cột bắt buộc/tùy chọn
+├── mantis_client.py       # Login, CSRF, submit bug_report.php, parse project/category
+├── requirements.txt
+├── .gitignore
+├── README.md
+├── samples/
+│   └── sample_test.json   # JSON mẫu (không project_id / category_id)
 ├── templates/
-│   └── index.html     # Giao diện chính của ứng dụng web (Bootstrap & Vanilla JS)
-│
-└── sessions/          # Thư mục lưu trữ tạm thời các phiên làm việc (Được tự động dọn dẹp)
+│   └── index.html         # UI (Bootstrap + JS)
+└── sessions/              # Cookie session tạm (gitignore, tự dọn)
 ```
+
+---
+
+## API nội bộ (tham khảo)
+
+| Method | Path | Mô tả |
+|--------|------|--------|
+| `POST` | `/api/test-connection` | Test URL + login, trả `session_id`, projects |
+| `POST` | `/api/projects` | Danh sách project |
+| `POST` | `/api/categories` | Category theo `project_id` đã chọn |
+| `POST` | `/api/import` | Import SSE (`text/event-stream`) |
+| `POST` | `/api/logout` | Xóa session |
+
+---
+
+## Phụ thuộc Python
+
+```text
+flask>=3.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+```
+
+---
+
+## Lưu ý vận hành
+
+1. User Mantis cần quyền **Report Issue** trên project đích.
+2. Nên chọn **Category** trên UI trước khi import (nếu project bắt buộc category).
+3. Tăng *delay* giữa các request nếu server chậm / bị rate-limit.
+4. Sau khi sửa UI, dùng **Ctrl+F5** nếu trình duyệt cache `index.html`.
+5. Không commit `sessions/`, `venv/`, file `_debug_*` / `_test_*` tạm.
+
+---
+
+## License / nguồn
+
+Tool import phụ trợ cho MantisBT. MantisBT giữ license riêng của dự án upstream.
