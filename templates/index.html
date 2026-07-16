@@ -384,7 +384,6 @@
   {
     "summary": "Tiêu đề lỗi (bắt buộc)",
     "description": "Mô tả chi tiết lỗi (bắt buộc)",
-    "category_id": 1, // Tùy chọn (nếu chọn Category ở trên)
     "project_id": 0,
     "handler_id": 0,
     "severity": "minor",
@@ -417,7 +416,6 @@
                                     </ul>
                                     <strong class="text-dark">2. Trường tùy chọn:</strong>
                                     <ul class="mb-0 ps-3">
-                                        <li><code>category_id</code> (Int/String): ID phân loại. (Tự chọn nếu đã chọn dropdown trên).</li>
                                         <li><code>project_id</code> (Int/String): ID dự án (Mặc định 0).</li>
                                         <li><code>handler_id</code> (Int/String): ID thành viên xử lý (Mặc định 0).</li>
                                         <li><code>severity</code> (String/Int): Độ nghiêm trọng (<code>"feature", "trivial", "text", "tweak", "minor", "major", "crash", "block"</code>).</li>
@@ -439,7 +437,7 @@
                         </div>
                         <textarea id="jsonTextarea" class="form-control font-monospace json-textarea"
                                   rows="14" spellcheck="false"
-                                  placeholder='[\n  {"summary": "...", "description": "...", "category_id": 1}\n]'
+                                  placeholder='[\n  {"summary": "...", "description": "..."}\n]'
                                   style="font-size:.85rem;resize:vertical;"></textarea>
                         <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                             <button type="button" class="btn btn-outline-mantis btn-sm"
