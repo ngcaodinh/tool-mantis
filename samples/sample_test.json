@@ -2,7 +2,6 @@
   {
     "summary": "Mẫu test 1: Lỗi hiển thị font chữ trên trang chủ",
     "description": "Mô tả chi tiết: Font chữ tiêu đề trang chủ bị lỗi hiển thị thành Times New Roman thay vì Roboto.",
-    "category_id": "1",
     "severity": "minor",
     "priority": "low",
     "platform": "Chrome",
@@ -13,7 +12,6 @@
   {
     "summary": "Mẫu test 2: Không thể nhấn nút Đăng ký khi điền đủ form",
     "description": "Mô tả chi tiết: Khi nhập đầy đủ thông tin hợp lệ vào form đăng ký, nút Submit vẫn bị disable không bấm được.",
-    "category_id": "1",
     "severity": "major",
     "priority": "high",
     "platform": "Firefox",

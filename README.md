@@ -70,9 +70,9 @@ Dữ liệu JSON cần là một mảng các đối tượng (array of objects) 
 ### Các trường bắt buộc
 - `summary` (string): Tiêu đề ngắn gọn của lỗi.
 - `description` (string): Mô tả chi tiết về lỗi.
-- `category_id` (string/int/numeric): ID của phân loại (ví dụ: `1` cho General).
 
 ### Các trường tùy chọn
+- `category_id` (string/int/numeric): ID của phân loại (ví dụ: `1` cho General). Trường này là tùy chọn nếu bạn đã lựa chọn Category từ menu thả xuống trên giao diện web.
 - `severity` (string/int): Độ nghiêm trọng (ví dụ: `minor`, `major`, `crash`, `block`, hoặc các mã số tương ứng).
 - `priority` (string/int): Mức độ ưu tiên (ví dụ: `low`, `normal`, `high`, `urgent`, `immediate`).
 - `platform` (string): Nền tảng gặp lỗi (ví dụ: `PC`, `Android`, `iOS`).
