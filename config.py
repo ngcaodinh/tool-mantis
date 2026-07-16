@@ -16,7 +16,7 @@ CSRF_REFRESH_EVERY = 10  # refresh CSRF token every N bugs
 os.makedirs(SESSION_DIR, exist_ok=True)
 
 # Required CSV columns
-REQUIRED_COLUMNS = ['summary', 'description', 'category_id']
+REQUIRED_COLUMNS = ['summary', 'description']
 
 # Optional CSV columns
 OPTIONAL_COLUMNS = [

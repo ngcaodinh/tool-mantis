@@ -384,7 +384,7 @@
   {
     "summary": "Tiêu đề lỗi (bắt buộc)",
     "description": "Mô tả chi tiết lỗi (bắt buộc)",
-    "category_id": 1,
+    "category_id": 1, // Tùy chọn (nếu chọn Category ở trên)
     "project_id": 0,
     "handler_id": 0,
     "severity": "minor",
@@ -1194,7 +1194,7 @@ function renderPreview(textOrData) {
 
     document.getElementById('previewBody').innerHTML = previewRows.map((row, ri) => {
         return '<tr>' + allKeys.map(k => {
-            const isReq = ['summary','description','category_id'].includes(k);
+            const isReq = ['summary','description'].includes(k);
             const val = row[k] !== undefined ? row[k] : '';
             const display = typeof val === 'object' ? JSON.stringify(val) : String(val);
             return `<td class="${isReq ? 'fw-600' : ''}">${escapeHtml(display) || '<span class="text-muted">—</span>'}</td>`;
