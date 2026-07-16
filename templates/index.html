@@ -384,7 +384,6 @@
   {
     "summary": "Tiêu đề lỗi (bắt buộc)",
     "description": "Mô tả chi tiết lỗi (bắt buộc)",
-    "handler_id": 0,
     "severity": "minor",
     "priority": "normal",
     "reproducibility": "always",
@@ -415,7 +414,6 @@
                                     </ul>
                                     <strong class="text-dark">2. Trường tùy chọn:</strong>
                                     <ul class="mb-0 ps-3">
-                                        <li><code>handler_id</code> (Int/String): ID thành viên xử lý (Mặc định 0).</li>
                                         <li><code>severity</code> (String/Int): Độ nghiêm trọng (<code>"feature", "trivial", "text", "tweak", "minor", "major", "crash", "block"</code>).</li>
                                         <li><code>priority</code> (String/Int): Độ ưu tiên (<code>"none", "low", "normal", "high", "urgent", "immediate"</code>).</li>
                                         <li><code>reproducibility</code> (String/Int): Khả năng tái hiện (<code>"always", "sometimes", "random", "have not tried", "unable to duplicate", "N/A"</code>).</li>
@@ -435,7 +433,6 @@
                                         <textarea class="form-control form-control-sm mt-1 bg-white font-monospace" style="font-size:0.72rem; cursor:pointer;" rows="6" readonly onclick="copyPromptToClipboard(this)">Hãy sinh ra dữ liệu JSON dùng để import lỗi vào hệ thống MantisBT theo cấu trúc danh sách (array of objects). Mỗi phần tử biểu diễn một lỗi (issue) và chỉ được sử dụng các trường dữ liệu sau:
 - summary (String): Tiêu đề lỗi (bắt buộc)
 - description (String): Mô tả chi tiết lỗi (bắt buộc)
-- handler_id (Int/String): ID người được phân công (Mặc định 0)
 - severity (String/Int): Độ nghiêm trọng ("feature", "trivial", "text", "tweak", "minor", "major", "crash", "block")
 - priority (String/Int): Độ ưu tiên ("none", "low", "normal", "high", "urgent", "immediate")
 - reproducibility (String/Int): Tái hiện ("always", "sometimes", "random", "have not tried", "unable to duplicate", "N/A")
