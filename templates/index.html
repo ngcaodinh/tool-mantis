@@ -380,7 +380,7 @@
                         <div class="alert alert-info py-2 px-3 mb-2" style="font-size: 0.82rem; border-radius: 6px; line-height: 1.4;">
                             <i class="bi bi-info-circle-fill me-1"></i>
                             <strong>Cấu trúc mẫu đầy đủ thông tin:</strong><br>
-                            <pre class="mb-1 mt-1 p-2 bg-light border rounded font-monospace" style="font-size: 0.78rem; color: #333; max-height: 250px; overflow-y: auto;">[
+                            <pre class="mb-1 mt-1 p-2 bg-light border rounded font-monospace" style="font-size: 0.78rem; color: #333; max-height: 200px; overflow-y: auto;">[
   {
     "summary": "Tiêu đề lỗi (bắt buộc)",
     "description": "Mô tả chi tiết lỗi (bắt buộc)",
@@ -405,6 +405,37 @@
     "tag_string": "tag1, tag2"
   }
 ]</pre>
+                            <details class="mt-2">
+                                <summary class="text-primary fw-600 cursor-pointer small" style="outline:none; list-style: none;">
+                                    <i class="bi bi-chevron-down me-1"></i>Xem mô tả chi tiết tất cả các trường (Copy đưa cho AI sinh JSON)
+                                </summary>
+                                <div class="mt-2 p-2 bg-light border rounded small" style="font-size: 0.75rem; max-height: 250px; overflow-y: auto; line-height: 1.5;">
+                                    <strong class="text-dark">1. Trường bắt buộc:</strong>
+                                    <ul class="mb-2 ps-3">
+                                        <li><code>summary</code> (String): Tiêu đề lỗi.</li>
+                                        <li><code>description</code> (String): Mô tả chi tiết lỗi.</li>
+                                    </ul>
+                                    <strong class="text-dark">2. Trường tùy chọn:</strong>
+                                    <ul class="mb-0 ps-3">
+                                        <li><code>category_id</code> (Int/String): ID phân loại. (Tự chọn nếu đã chọn dropdown trên).</li>
+                                        <li><code>project_id</code> (Int/String): ID dự án (Mặc định 0).</li>
+                                        <li><code>handler_id</code> (Int/String): ID thành viên xử lý (Mặc định 0).</li>
+                                        <li><code>severity</code> (String/Int): Độ nghiêm trọng (<code>"feature", "trivial", "text", "tweak", "minor", "major", "crash", "block"</code>).</li>
+                                        <li><code>priority</code> (String/Int): Độ ưu tiên (<code>"none", "low", "normal", "high", "urgent", "immediate"</code>).</li>
+                                        <li><code>reproducibility</code> (String/Int): Khả năng tái hiện (<code>"always", "sometimes", "random", "have not tried", "unable to duplicate", "N/A"</code>).</li>
+                                        <li><code>eta</code> (String/Int): Dự kiến hoàn thành (<code>"none", "&lt; 1 day", "2-3 days", "&lt; 1 week", "&lt; 1 month", "&gt; 1 month"</code>).</li>
+                                        <li><code>platform</code> / <code>os</code> / <code>os_build</code> / <code>version</code> / <code>build</code> (String): Thiết bị, hệ điều hành, build, phiên bản...</li>
+                                        <li><code>due_date</code> (String): Hạn xử lý, định dạng <code>"YYYY-MM-DD"</code>.</li>
+                                        <li><code>status</code> (String/Int): Trạng thái lỗi (<code>"new", "feedback", "acknowledged", "confirmed", "assigned", "resolved", "closed"</code>).</li>
+                                        <li><code>resolution</code> (String/Int): Hướng xử lý (<code>"open", "fixed", "reopened", "unable to reproduce", "not fixable", "duplicate", "no change required", "suspended", "won't fix"</code>).</li>
+                                        <li><code>view_state</code> (String/Int): Chế độ hiển thị (<code>"public", "private"</code>).</li>
+                                        <li><code>steps_to_reproduce</code> (String): Các bước tái hiện.</li>
+                                        <li><code>additional_info</code> (String): Thông tin thêm.</li>
+                                        <li><code>tag_string</code> (String): Danh sách tags (phân cách bằng dấu phẩy).</li>
+                                        <li><code>custom_field_&lt;id&gt;</code> (String): Custom Field (ví dụ: <code>custom_field_1</code>).</li>
+                                    </ul>
+                                </div>
+                            </details>
                         </div>
                         <textarea id="jsonTextarea" class="form-control font-monospace json-textarea"
                                   rows="14" spellcheck="false"
