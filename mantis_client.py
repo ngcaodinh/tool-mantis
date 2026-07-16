@@ -42,6 +42,17 @@ class MantisBTClient:
 
     LOCATION_BUG_PATTERN = re.compile(r'bug_view_page\.php\?id=(\d+)', re.IGNORECASE)
 
+    # MantisBT 2.x often returns HTTP 200 confirmation page (meta-refresh) instead of 302.
+    # ONLY match the confirmation wording — never generic bug_view links (Recently Visited).
+    # Example: "Operation successful. View Submitted Issue 31"
+    SUCCESS_BUG_ID_PATTERNS = [
+        re.compile(r'View\s+Submitted\s+Issue\s+(\d+)', re.IGNORECASE),
+        re.compile(
+            r'Operation\s+successful[.\s]*View\s+Submitted\s+Issue\s+(\d+)',
+            re.IGNORECASE,
+        ),
+    ]
+
     # Pattern for MantisBT project dropdown: <option value="123" ... >Name</option>
     PROJECT_OPTION_PATTERN = re.compile(
         r'<option[^>]+value=["\'](\d+)["\'][^>]*>(.*?)</option>',
@@ -389,13 +400,24 @@ class MantisBTClient:
             _logger.debug(f"fetch_projects: exception: {e}")
             return {'success': False, 'message': str(e), 'projects': []}
 
-    def fetch_csrf_token(self) -> Optional[str]:
+    def fetch_csrf_token(self, project_id: str = '') -> Optional[str]:
+        """Load bug_report_page and scrape bug_report_token.
+
+        When project_id is set, request that project's form so the hidden
+        project_id and available categories match the import target.
+        """
         try:
-            resp = self.session.get(
-                f'{self.base_url}/bug_report_page.php',
-                timeout=15
-            )
+            url = f'{self.base_url}/bug_report_page.php'
+            params = {}
+            if project_id and str(project_id) not in ('', '0'):
+                params['project_id'] = str(project_id)
+            resp = self.session.get(url, params=params or None, timeout=15)
             if resp.status_code != 200:
+                return None
+
+            # Redirected to login or project picker — no usable form token
+            final = (resp.url or '').lower()
+            if 'login_page' in final or 'login_select_proj' in final:
                 return None
 
             html = resp.text
@@ -426,10 +448,65 @@ class MantisBTClient:
                 text = BeautifulSoup(text, 'html.parser').get_text(strip=True)
                 if text:
                     return text[:300]
+        # Fallback: extract APPLICATION ERROR block from plain text
+        text = BeautifulSoup(html, 'html.parser').get_text(' ', strip=True)
+        m = re.search(
+            r'APPLICATION ERROR\s*#?\d*\s*(.{10,280}?)(?:Please use|Powered by|$)',
+            text,
+            re.IGNORECASE | re.DOTALL,
+        )
+        if m:
+            return re.sub(r'\s+', ' ', m.group(0)).strip()[:300]
         return 'Lỗi không xác định'
 
     def _check_csrf_invalid(self, html: str) -> bool:
-        return 'ERROR_FORM_TOKEN_INVALID' in html or 'form_token_invalid' in html.lower()
+        low = html.lower()
+        return (
+            'ERROR_FORM_TOKEN_INVALID' in html
+            or 'form_token_invalid' in low
+            or 'invalid form security token' in low
+            or 'application error #2800' in low
+        )
+
+    def _extract_bug_id_from_response(self, resp) -> Optional[str]:
+        """Extract created issue id from redirect Location or success HTML body.
+
+        MantisBT 2.25.x bug_report.php typically returns HTTP 200 with
+        html_meta_redirect + 'Operation successful / View Submitted Issue N'
+        rather than a pure 302 Location header (when redirects are not followed).
+
+        Important: do NOT scrape arbitrary bug_view_page.php?id= links from the
+        chrome (Recently Visited) — that causes false success with stale ids.
+        """
+        location = resp.headers.get('Location', '') or ''
+        m = self.LOCATION_BUG_PATTERN.search(location)
+        if m:
+            return m.group(1)
+
+        body = resp.text or ''
+        # Prefer plain-text confirmation label (works even if markup changes)
+        text = BeautifulSoup(body, 'html.parser').get_text(' ', strip=True)
+        for pattern in self.SUCCESS_BUG_ID_PATTERNS:
+            m = pattern.search(text) or pattern.search(body)
+            if m:
+                return m.group(1)
+
+        # Meta refresh only when confirmation page also says success
+        if 'operation successful' in text.lower() or 'view submitted issue' in text.lower():
+            m = re.search(
+                r'content=["\']?\d+\s*;\s*url=([^"\'>\s]+)',
+                body,
+                re.IGNORECASE,
+            )
+            if m:
+                target = m.group(1)
+                m2 = self.LOCATION_BUG_PATTERN.search(target)
+                if m2:
+                    return m2.group(1)
+                m2 = re.search(r'[?&]id=(\d+)', target)
+                if m2:
+                    return m2.group(1)
+        return None
 
     # Canonical payload field order, mirrors MantisBT 2.25.5
     # bug_report_page.php form layout (Enter Issue Details panel).
@@ -462,114 +539,232 @@ class MantisBTClient:
             """Normalize value to non-empty string; empty -> ''."""
             if v is None or v == '':
                 return ''
+            if isinstance(v, list):
+                return ','.join(str(x) for x in v if x is not None and str(x).strip() != '')
             return str(v)
 
-        payload = {
-            'bug_report_token': self._csrf_token,
-            'm_id': self._enum_norm('m_id', fields.get('m_id', 0), 0),
-            'project_id': _str(project_id),
-            'category_id': self._enum_norm('category_id', fields.get('category_id'), 1),
-            'reproducibility': self._enum_norm('reproducibility', fields.get('reproducibility'), 10),
-            'eta': self._enum_norm('eta', fields.get('eta'), 10),
-            'severity': self._enum_norm('severity', fields.get('severity'), 50),
-            'priority': self._enum_norm('priority', fields.get('priority'), 30),
-            'due_date': _str(fields.get('due_date', '')),
-            'profile_id': self._enum_norm('profile_id', fields.get('profile_id'), 0),
-            'platform': _str(fields.get('platform', '')),
-            'os': _str(fields.get('os', '')),
-            'os_build': _str(fields.get('os_build', '')),
-            'product_version': _str(fields.get('product_version', fields.get('version', ''))),
-            'build': _str(fields.get('build', '')),
-            'handler_id': self._enum_norm('handler_id', fields.get('handler_id'), 0),
-            'target_version': _str(fields.get('target_version', '')),
-            'status': self._enum_norm('status', fields.get('status'), 10),
-            'resolution': self._enum_norm('resolution', fields.get('resolution'), 10),
-            'summary': _str(fields.get('summary', '')),
-            'description': _str(fields.get('description', '')),
-            'steps_to_reproduce': _str(fields.get('steps_to_reproduce', '')),
-            'additional_info': _str(fields.get('additional_info', '')),
-            'tag_string': _str(fields.get('tag_string', '')),
-            'view_state': self._enum_norm('view_state', fields.get('view_state'), 10),
-            'report_stay': '0',
-        }
+        def _build_form_data(csrf_token: str) -> list:
+            """Build multipart/urlencoded pairs matching Enter Issue Details form.
 
-        # Handle custom fields
-        for key, value in fields.items():
-            if key.startswith('custom_field_'):
-                payload[key] = value
+            Uses list of tuples so multi-value fields (monitors[]) work like
+            bug_report_page.php: <select name=\"monitors[]\" multiple>.
+            """
+            pairs = [
+                ('bug_report_token', csrf_token or ''),
+                ('m_id', str(self._enum_norm('m_id', fields.get('m_id', 0), 0))),
+                ('project_id', _str(project_id)),
+                ('category_id', str(self._enum_norm('category_id', fields.get('category_id'), 1))),
+                ('reproducibility', str(self._enum_norm('reproducibility', fields.get('reproducibility'), 10))),
+                ('eta', str(self._enum_norm('eta', fields.get('eta'), 10))),
+                ('severity', str(self._enum_norm('severity', fields.get('severity'), 50))),
+                ('priority', str(self._enum_norm('priority', fields.get('priority'), 30))),
+                ('due_date', _str(fields.get('due_date', ''))),
+                ('profile_id', str(self._enum_norm('profile_id', fields.get('profile_id'), 0))),
+                ('platform', _str(fields.get('platform', ''))),
+                ('os', _str(fields.get('os', ''))),
+                ('os_build', _str(fields.get('os_build', ''))),
+                ('product_version', _str(fields.get('product_version', fields.get('version', '')))),
+                ('build', _str(fields.get('build', ''))),
+                ('handler_id', str(self._enum_norm('handler_id', fields.get('handler_id'), 0))),
+                ('target_version', _str(fields.get('target_version', ''))),
+                ('status', str(self._enum_norm('status', fields.get('status'), 10))),
+                ('resolution', str(self._enum_norm('resolution', fields.get('resolution'), 10))),
+                ('summary', _str(fields.get('summary', ''))),
+                ('description', _str(fields.get('description', ''))),
+                ('steps_to_reproduce', _str(fields.get('steps_to_reproduce', ''))),
+                ('additional_info', _str(fields.get('additional_info', ''))),
+                ('tag_string', _str(fields.get('tag_string', fields.get('tags', '')))),
+                ('view_state', str(self._enum_norm('view_state', fields.get('view_state'), 10))),
+                ('report_stay', '0'),
+            ]
+
+            # monitors[] — only when non-empty (empty list must not be posted as scalar)
+            monitors_raw = fields.get('monitors')
+            monitor_ids = []
+            if isinstance(monitors_raw, list):
+                monitor_ids = [str(x).strip() for x in monitors_raw if str(x).strip() not in ('', '0')]
+            elif monitors_raw not in (None, '', 0, '0'):
+                # allow "1,2,3" or single id
+                monitor_ids = [p.strip() for p in str(monitors_raw).replace(';', ',').split(',') if p.strip()]
+            for mid in monitor_ids:
+                pairs.append(('monitors[]', mid))
+
+            for key, value in fields.items():
+                if key.startswith('custom_field_'):
+                    pairs.append((key, value if value is not None else ''))
+
+            return pairs
 
         try:
+            # Always take a fresh CSRF token for this project before submit.
+            # Mantis purges the token after each successful bug_report.
+            token = self.fetch_csrf_token(_str(project_id)) or self._csrf_token
+            if not token:
+                return {
+                    'success': False,
+                    'bug_id': None,
+                    'error': 'Không lấy được CSRF token (chưa chọn project hoặc session hết hạn)',
+                }
+
+            form_data = _build_form_data(token)
             resp = self.session.post(
                 f'{self.base_url}/bug_report.php',
-                data=payload,
+                data=form_data,
                 allow_redirects=False,
                 timeout=30
             )
 
-            # Success: 302 redirect to bug_view_page.php?id=X
-            if resp.status_code in (302, 303):
-                location = resp.headers.get('Location', '')
-                bug_match = self.LOCATION_BUG_PATTERN.search(location)
-                if bug_match:
-                    bug_id = bug_match.group(1)
-                    return {'success': True, 'bug_id': bug_id, 'error': None}
+            bug_id = self._extract_bug_id_from_response(resp)
+            if bug_id:
+                return {'success': True, 'bug_id': bug_id, 'error': None}
 
-            # CSRF token invalid - retry once
+            # CSRF token invalid - retry once with a brand-new token
             if resp.status_code == 200 and self._check_csrf_invalid(resp.text):
-                new_token = self.fetch_csrf_token()
+                new_token = self.fetch_csrf_token(_str(project_id))
                 if new_token:
-                    payload['bug_report_token'] = new_token
+                    form_data = _build_form_data(new_token)
                     resp = self.session.post(
                         f'{self.base_url}/bug_report.php',
-                        data=payload,
+                        data=form_data,
                         allow_redirects=False,
                         timeout=30
                     )
-                    if resp.status_code in (302, 303):
-                        location = resp.headers.get('Location', '')
-                        bug_match = self.LOCATION_BUG_PATTERN.search(location)
-                        if bug_match:
-                            return {'success': True, 'bug_id': bug_match.group(1), 'error': None}
+                    bug_id = self._extract_bug_id_from_response(resp)
+                    if bug_id:
+                        return {'success': True, 'bug_id': bug_id, 'error': None}
 
             # Failure - parse error message
             if resp.status_code in (200, 302, 303):
                 error_msg = self._parse_error(resp.text)
                 if error_msg and 'không xác định' not in error_msg:
                     return {'success': False, 'bug_id': None, 'error': error_msg}
+                # Success page text sometimes not matched — last chance
+                if 'operation successful' in (resp.text or '').lower():
+                    bug_id = self._extract_bug_id_from_response(resp)
+                    if bug_id:
+                        return {'success': True, 'bug_id': bug_id, 'error': None}
+                    return {
+                        'success': True,
+                        'bug_id': None,
+                        'error': None,
+                    }
 
             return {'success': False, 'bug_id': None, 'error': f'HTTP {resp.status_code}'}
 
         except Exception as e:
             return {'success': False, 'bug_id': None, 'error': str(e)}
 
+    @staticmethod
+    def _clean_category_label(raw: str) -> str:
+        """Strip Mantis prefixes like [All Projects] / [Project Name] for display."""
+        name = (raw or '').strip()
+        # "[All Projects] Foo" or "[CTUT fix] Foo" -> "Foo"
+        name = re.sub(r'^\[[^\]]+\]\s*', '', name).strip()
+        return name or raw.strip()
+
     def fetch_categories(self, project_id: str) -> dict:
+        """Load categories available for the selected project only.
+
+        Flow mirrors MantisUI:
+          1) set current project
+          2) open bug_report_page for that project
+          3) scrape <select name=\"category_id\"> options
+        """
         try:
-            url = f'{self.base_url}/bug_report_page.php?project_id={project_id}'
-            resp = self.session.get(url, timeout=15)
+            pid = str(project_id or '').strip()
+            if not pid or pid == '0':
+                return {
+                    'success': False,
+                    'message': 'Vui lòng chọn Project trước khi tải Category',
+                    'categories': [],
+                    'project_id': pid or '0',
+                }
+
+            # Pin current project so category list matches that project
+            try:
+                self.session.post(
+                    f'{self.base_url}/set_project.php',
+                    data={'project_id': pid, 'ref': 'bug_report_page.php'},
+                    allow_redirects=True,
+                    timeout=15,
+                )
+            except Exception:
+                pass
+
+            url = f'{self.base_url}/bug_report_page.php'
+            resp = self.session.get(url, params={'project_id': pid}, timeout=15)
             if resp.status_code != 200:
-                return {'success': False, 'message': f'HTTP {resp.status_code}'}
-            
+                return {
+                    'success': False,
+                    'message': f'HTTP {resp.status_code}',
+                    'categories': [],
+                    'project_id': pid,
+                }
+
+            final = (resp.url or '').lower()
+            if 'login_page' in final or 'login_select_proj' in final:
+                return {
+                    'success': False,
+                    'message': 'Session hết hạn hoặc chưa chọn được project. Vui lòng đăng nhập lại.',
+                    'categories': [],
+                    'project_id': pid,
+                }
+
             soup = BeautifulSoup(resp.text, 'html.parser')
+
+            # Confirm hidden project_id on form matches selection
+            hidden_proj = soup.find('input', {'name': 'project_id'})
+            form_project = (hidden_proj.get('value') if hidden_proj else '') or pid
+
             select_el = soup.find('select', {'name': 'category_id'})
             if not select_el:
                 select_el = soup.find('select', id='category_id')
-            
+
             categories = []
             if select_el:
                 for opt in select_el.find_all('option'):
-                    val = opt.get('value', '').strip()
-                    txt = opt.get_text().strip()
-                    if not val or val == '0' or any(kw in txt.lower() for kw in ['select', 'chọn', 'choose', '--']):
+                    val = (opt.get('value') or '').strip()
+                    raw_txt = opt.get_text(' ', strip=True)
+                    if not val or val == '0':
                         continue
-                    categories.append({'id': val, 'name': txt})
-            
+                    low = raw_txt.lower()
+                    if any(kw in low for kw in ('(select)', 'select a', 'chọn', 'choose', '--')):
+                        continue
+                    # Only options from this project's report form (already scoped by Mantis)
+                    clean = self._clean_category_label(raw_txt)
+                    is_global = raw_txt.strip().lower().startswith('[all projects]')
+                    categories.append({
+                        'id': val,
+                        'name': clean,
+                        'label': raw_txt,
+                        'is_global': is_global,
+                        'project_id': form_project,
+                    })
+
+            if not categories:
+                return {
+                    'success': False,
+                    'message': (
+                        f'Project ID {pid} không có category nào. '
+                        'Hãy thêm Category trong Mantis: Manage → Manage Projects → Categories.'
+                    ),
+                    'categories': [],
+                    'project_id': pid,
+                }
+
             return {
                 'success': True,
                 'categories': categories,
-                'message': f'Tải thành công {len(categories)} category'
+                'project_id': pid,
+                'message': f'Tải {len(categories)} category của project {pid}',
             }
         except Exception as e:
-            return {'success': False, 'message': str(e), 'categories': []}
+            return {
+                'success': False,
+                'message': str(e),
+                'categories': [],
+                'project_id': str(project_id or ''),
+            }
 
     def delete_session(self):
         path = self._session_file_path()

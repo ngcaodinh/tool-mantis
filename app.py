@@ -227,12 +227,13 @@ def import_bugs():
             'total': total
         })
 
-        # Initial fetch of CSRF token
-        csrf_ok = client.fetch_csrf_token()
+        # Preflight: ensure we can open bug report form (project selected / session OK).
+        # Per-bug CSRF is fetched inside submit_bug (Mantis purges token after each success).
+        csrf_ok = client.fetch_csrf_token(project_id if project_id and project_id != '0' else '')
         if not csrf_ok:
             yield _sse({
                 'type': 'error',
-                'message': 'Không lấy được CSRF token từ MantisBT',
+                'message': 'Không lấy được CSRF token từ MantisBT. Hãy chọn Project trước khi import.',
                 'step': 'done',
                 'final': True
             })
@@ -241,18 +242,44 @@ def import_bugs():
         for i, row in enumerate(rows, start=1):
             row_num = i
 
-            # Refresh CSRF token every N bugs
-            if i > 1 and (i - 1) % 10 == 0:
-                client.fetch_csrf_token()
+            # Báo UI biết đang bắt đầu dòng này (progress bar nhích trước khi HTTP xong)
+            yield _sse({
+                'type': 'status',
+                'message': f'Đang gửi issue {i}/{total}: {(row.get("summary") or "")[:80]}',
+                'step': 'import',
+                'row': i,
+                'total': total,
+            })
 
             fields = {}
             for col in list(row.keys()):
-                val = row.get(col, '').strip()
+                raw = row.get(col)
+                if raw is None:
+                    continue
+                # JSON may contain lists (e.g. monitors: []) or numbers — never call .strip() blindly
+                if isinstance(raw, list):
+                    if col == 'monitors':
+                        mon = [str(x).strip() for x in raw if x is not None and str(x).strip() != '']
+                        if mon:
+                            fields[col] = mon
+                    else:
+                        joined = ','.join(str(x).strip() for x in raw if x is not None and str(x).strip() != '')
+                        if joined:
+                            fields[col] = joined
+                    continue
+                if isinstance(raw, (int, float, bool)):
+                    fields[col] = str(raw)
+                    continue
+                val = str(raw).strip()
                 if val:
                     fields[col] = val
 
+            # Alias: README uses "tags", form field is tag_string
+            if 'tag_string' not in fields and fields.get('tags'):
+                fields['tag_string'] = fields['tags']
+
             # Inject project_id from dropdown (priority: row's own project_id > dropdown selection)
-            if 'project_id' not in fields or not fields['project_id']:
+            if 'project_id' not in fields or not fields['project_id'] or fields['project_id'] == '0':
                 if project_id and project_id != '0':
                     fields['project_id'] = project_id
 
@@ -261,8 +288,11 @@ def import_bugs():
                 fields['summary'] = f'Bug import #{i}'
             if 'description' not in fields or not fields['description']:
                 fields['description'] = fields.get('summary', '')
-            if 'category_id' not in fields or not fields['category_id']:
-                fields['category_id'] = '1'
+            if 'category_id' not in fields or not fields['category_id'] or fields['category_id'] == '0':
+                if category_id and category_id != '0':
+                    fields['category_id'] = category_id
+                else:
+                    fields['category_id'] = '1'
 
             time.sleep(delay)
 
@@ -314,14 +344,17 @@ def import_bugs():
             'results': results
         })
 
+    # SSE: tắt buffer để progress hiện realtime trên UI (không dồn 1 cục cuối)
     return Response(
         stream_with_context(generate()),
         mimetype='text/event-stream',
         headers={
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-transform',
             'X-Accel-Buffering': 'no',
             'Connection': 'keep-alive',
-        }
+            'Content-Type': 'text/event-stream; charset=utf-8',
+        },
+        direct_passthrough=False,
     )
 
 

@@ -122,25 +122,125 @@
             display: none;
         }
         .progress-wrapper {
-            background: #eef4fa;
-            border-radius: 10px;
-            padding: 20px 24px;
-            margin-bottom: 20px;
+            background: linear-gradient(145deg, #eef4fa 0%, #e3edf7 100%);
+            border-radius: 14px;
+            padding: 28px 28px 24px;
+            margin-bottom: 24px;
+            border: 1px solid #d4e2ef;
+            box-shadow: 0 2px 12px rgba(26, 94, 140, 0.06);
+        }
+        .progress-track {
+            height: 22px;
+            border-radius: 12px;
+            background: #d9e6f2;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,.08);
         }
         .progress-bar-mantis {
-            background: linear-gradient(90deg, var(--mantis-blue-dark), var(--mantis-blue-light));
-            height: 12px;
-            border-radius: 6px;
-            transition: width .4s ease;
+            background: linear-gradient(90deg, #134267, #1a5e8c, #2b7db8, #3d9ad4);
+            background-size: 200% 100%;
+            height: 100%;
+            width: 0%;
+            border-radius: 12px;
+            transition: width .85s cubic-bezier(.22, 1, .36, 1);
+            position: relative;
+            overflow: hidden;
+            animation: progress-shift 2.2s linear infinite;
+        }
+        .progress-bar-mantis::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                105deg,
+                transparent 30%,
+                rgba(255,255,255,.35) 50%,
+                transparent 70%
+            );
+            background-size: 200% 100%;
+            animation: progress-shine 1.6s ease-in-out infinite;
+        }
+        .progress-bar-mantis.is-done {
+            animation: none;
+            background: linear-gradient(90deg, #217a4b, var(--mantis-green));
+        }
+        .progress-bar-mantis.is-done::after { animation: none; opacity: 0; }
+        @keyframes progress-shine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        @keyframes progress-shift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .progress-percent-big {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--mantis-blue);
+            letter-spacing: -0.5px;
+            line-height: 1;
+            min-width: 4.5rem;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            transition: color .3s;
+        }
+        .current-item-box {
+            background: #fff;
+            border: 1px solid #d4e2ef;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-top: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-height: 64px;
+        }
+        .current-item-box .item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e8f0f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--mantis-blue);
+            font-size: 1.1rem;
+        }
+        .current-item-box .item-icon.is-running {
+            background: #fff3cd;
+            color: #856404;
+            animation: pulse 1.2s infinite;
+        }
+        .current-item-label {
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #888;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .current-item-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #222;
+            line-height: 1.35;
+            word-break: break-word;
         }
         .stat-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: .85rem;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,.04);
+        }
+        .stat-badge strong {
+            font-size: 1.25rem;
+            font-variant-numeric: tabular-nums;
         }
         .stat-total { background: #e8eff6; color: var(--mantis-blue); }
         .stat-success { background: #e6f4ea; color: var(--mantis-green); }
@@ -150,6 +250,73 @@
         .result-row-success td:nth-child(3) { color: var(--mantis-green); font-weight: 600; }
         .result-row-failed td:nth-child(3) { color: var(--mantis-red); font-weight: 600; }
         .result-row-failed td { background: #fff8f8 !important; }
+        .result-row-enter {
+            animation: row-slide-in .45s ease-out;
+        }
+        @keyframes row-slide-in {
+            from { opacity: 0; transform: translateY(10px); background: #fffde7; }
+            to { opacity: 1; transform: none; background: transparent; }
+        }
+
+        /* Bảng kết quả to, dễ nhìn */
+        .result-table-wrap {
+            max-height: min(62vh, 640px);
+            overflow-y: auto;
+            border: 1px solid #c5d6e6;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 4px 18px rgba(26, 94, 140, 0.08);
+        }
+        .result-table-lg {
+            font-size: 1.05rem;
+            margin-bottom: 0;
+        }
+        .result-table-lg thead th {
+            background: linear-gradient(180deg, #e8eff6, #dce8f3) !important;
+            color: var(--mantis-blue-dark);
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 14px 16px !important;
+            border-bottom: 2px solid #b8cde0 !important;
+            white-space: nowrap;
+        }
+        .result-table-lg tbody td {
+            padding: 14px 16px !important;
+            vertical-align: middle;
+            border-color: #e8eef4;
+        }
+        .result-table-lg tbody tr:hover td {
+            background: #f5f9fc !important;
+        }
+        .result-table-lg .col-num {
+            width: 56px;
+            text-align: center;
+            font-weight: 700;
+            color: #6a8499;
+            font-size: 1rem;
+        }
+        .result-table-lg .col-summary {
+            min-width: 280px;
+            font-weight: 500;
+            color: #1a2a36;
+            line-height: 1.4;
+        }
+        .result-table-lg .col-status { width: 140px; }
+        .result-table-lg .col-bugid {
+            width: 110px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .result-table-lg .col-bugid a {
+            color: var(--mantis-blue);
+            text-decoration: none;
+        }
+        .result-table-lg .col-bugid a:hover { text-decoration: underline; }
+        .result-table-lg .col-error {
+            min-width: 200px;
+            color: #a33;
+            font-size: 0.95rem;
+        }
 
         .summary-card {
             border-left: 4px solid var(--mantis-blue);
@@ -164,11 +331,11 @@
         .badge-status {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: .78rem;
-            font-weight: 600;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: .92rem;
+            font-weight: 700;
         }
         .badge-success { background: #d4edda; color: #155724; }
         .badge-failed { background: #f8d7da; color: #721c24; }
@@ -176,7 +343,7 @@
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: .6; }
+            50% { opacity: .55; }
         }
 
         .spinner-inline {
@@ -199,7 +366,116 @@
 
         .info-text { font-size: .82rem; color: #777; }
 
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10050;
+            max-width: min(420px, calc(100vw - 32px));
+        }
+        .toast-big {
+            min-width: min(380px, calc(100vw - 32px)) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 28px rgba(0,0,0,.18) !important;
+            padding: 4px 0 !important;
+        }
+        .toast-big .toast-msg {
+            font-size: 1.05rem !important;
+            font-weight: 600;
+            line-height: 1.4;
+            padding: 4px 0;
+        }
+
+        /* Overlay import full màn — luôn thấy khi bấm Import */
+        .import-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(15, 35, 55, 0.55);
+            backdrop-filter: blur(3px);
+            align-items: stretch;
+            justify-content: center;
+            padding: 24px 16px;
+            overflow-y: auto;
+        }
+        .import-overlay.is-open {
+            display: flex;
+            animation: phase-fade-in .3s ease-out;
+        }
+        .import-overlay-panel {
+            width: min(1100px, 100%);
+            margin: auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0,0,0,.28);
+            overflow: hidden;
+            max-height: calc(100vh - 48px);
+            display: flex;
+            flex-direction: column;
+        }
+        .import-overlay-head {
+            background: linear-gradient(135deg, var(--mantis-blue-dark), var(--mantis-blue));
+            color: #fff;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .import-overlay-head h3 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+        .import-overlay-body {
+            padding: 22px 24px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .import-overlay-foot {
+            padding: 16px 24px 20px;
+            border-top: 1px solid #e5eef5;
+            background: #f8fafc;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .import-banner-done {
+            display: none;
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 18px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            align-items: center;
+            gap: 14px;
+        }
+        .import-banner-done.is-show {
+            display: flex;
+        }
+        .import-banner-done.ok {
+            background: linear-gradient(135deg, #e6f4ea, #d4edda);
+            color: #155724;
+            border: 1px solid #b7dfc3;
+        }
+        .import-banner-done.bad {
+            background: linear-gradient(135deg, #fdeaea, #f8d7da);
+            color: #721c24;
+            border: 1px solid #f1c0c5;
+        }
+        .import-banner-done.warn {
+            background: linear-gradient(135deg, #fff8e6, #fff3cd);
+            color: #856404;
+            border: 1px solid #ffe08a;
+        }
+        .import-banner-done .banner-rate {
+            font-size: 1.8rem;
+            font-weight: 800;
+            min-width: 4.5rem;
+        }
 
         /* Tabs styling */
         .nav-pills .nav-link {
@@ -247,25 +523,42 @@
         .table-scroll::-webkit-scrollbar-thumb { background: #b0c4d8; border-radius: 3px; }
 
         .stream-status {
-            font-size: .82rem;
-            color: #666;
-            margin-bottom: 8px;
+            font-size: 1rem;
+            color: #445;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid #e2ebf3;
+        }
+        .stream-status #streamMsg {
+            font-weight: 600;
+            font-size: 1.05rem;
         }
 
         /* Success rate donut visual */
         .rate-circle {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1.35rem;
+            font-weight: 800;
             color: #fff;
+            box-shadow: 0 4px 16px rgba(0,0,0,.12);
+        }
+
+        .import-overlay-pulse {
+            animation: phase-fade-in .35s ease-out;
+        }
+        @keyframes phase-fade-in {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: none; }
         }
         .rate-good { background: linear-gradient(135deg, #217a4b, var(--mantis-green)); }
         .rate-ok { background: linear-gradient(135deg, #d4880e, var(--mantis-yellow)); color: #333; }
@@ -276,6 +569,96 @@
 
 <!-- Toast container -->
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- Overlay Import (luôn nổi trên cùng khi bấm Import) -->
+<div class="import-overlay" id="importOverlay" aria-live="polite">
+    <div class="import-overlay-panel">
+        <div class="import-overlay-head">
+            <h3 id="overlayTitle"><i class="bi bi-hourglass-split me-2"></i>Đang import…</h3>
+            <span class="badge bg-light text-dark fs-6 px-3 py-2" id="overlayCounter">0 / 0</span>
+        </div>
+        <div class="import-overlay-body">
+            <div class="import-banner-done" id="overlayDoneBanner">
+                <div class="banner-rate" id="overlayDoneRate">0%</div>
+                <div>
+                    <div id="overlayDoneTitle">Import hoàn tất</div>
+                    <div class="fw-500 small mt-1" id="overlayDoneSub" style="opacity:.9;"></div>
+                </div>
+            </div>
+
+            <div class="progress-wrapper mb-3" id="overlayProgressBlock">
+                <div class="d-flex justify-content-between align-items-end mb-3">
+                    <div>
+                        <div class="fw-700" style="font-size:1.1rem;color:var(--mantis-blue-dark);">
+                            Tiến độ import
+                        </div>
+                        <div class="text-muted small mt-1" id="overlaySubLabel">
+                            Chuẩn bị gửi từng issue lên MantisBT…
+                        </div>
+                    </div>
+                    <div class="progress-percent-big" id="overlayPercent">0%</div>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-bar-mantis" id="overlayBar" style="width:0%"></div>
+                </div>
+                <div class="d-flex gap-3 mt-3 flex-wrap">
+                    <span class="stat-badge stat-total">
+                        <i class="bi bi-list-ul"></i> Tổng: <strong id="overlayTotal">0</strong>
+                    </span>
+                    <span class="stat-badge stat-success">
+                        <i class="bi bi-check-circle-fill"></i> Thành công: <strong id="overlaySuccess">0</strong>
+                    </span>
+                    <span class="stat-badge stat-failed">
+                        <i class="bi bi-x-circle-fill"></i> Thất bại: <strong id="overlayFailed">0</strong>
+                    </span>
+                </div>
+                <div class="current-item-box" id="overlayCurrentBox">
+                    <div class="item-icon is-running" id="overlayCurrentIcon">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="current-item-label">Đang xử lý</div>
+                        <div class="current-item-text" id="overlayCurrentText">Đang kết nối tới MantisBT…</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stream-status mb-3" id="overlayStreamStatus">
+                <span class="spinner-border spinner-border-sm text-primary" id="overlaySpinner" role="status"></span>
+                <span id="overlayStreamMsg">Đang kết nối…</span>
+            </div>
+
+            <h5 class="fw-bold mb-2" style="color:var(--mantis-blue-dark);">
+                <i class="bi bi-table me-2"></i>Bảng kết quả realtime
+            </h5>
+            <div class="result-table-wrap table-responsive" id="overlayTableScroll" style="max-height:42vh;">
+                <table class="table table-hover result-table-lg" id="overlayResultTable">
+                    <thead style="position:sticky;top:0;z-index:2;">
+                        <tr>
+                            <th class="col-num">#</th>
+                            <th>Summary</th>
+                            <th class="col-status">Trạng thái</th>
+                            <th class="col-bugid">Bug ID</th>
+                            <th class="col-error">Chi tiết / Lỗi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overlayResultBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="import-overlay-foot" id="overlayFoot" style="display:none;">
+            <a href="#" id="overlayMantisLink" target="_blank" class="btn btn-outline-mantis me-auto">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Mở MantisBT
+            </a>
+            <button type="button" class="btn btn-outline-secondary btn-lg" id="btnOverlayClose" onclick="closeImportOverlay(false)">
+                Đóng
+            </button>
+            <button type="button" class="btn btn-mantis btn-lg" id="btnOverlayContinue" onclick="closeImportOverlay(true)">
+                <i class="bi bi-arrow-repeat me-1"></i>Import tiếp
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-mantis mb-4">
@@ -342,17 +725,20 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">
-                                    * Category (Danh mục lỗi)
+                                    * Category (theo Project đã chọn)
                                     <button type="button" class="btn btn-sm btn-link p-0 ms-1 align-baseline"
                                             onclick="reloadCategories()" id="btnReloadCategories"
-                                            title="Tải lại danh sách category" disabled>
+                                            title="Tải lại category của project đang chọn" disabled>
                                         <i class="bi bi-arrow-clockwise"></i>
                                     </button>
                                     <span class="spinner-inline-sm d-none ms-1" id="categoriesSpinner"></span>
                                 </label>
                                 <select class="form-select" id="mantisCategory" disabled>
-                                    <option value="0">— Chọn Project để tải category —</option>
+                                    <option value="0">— Chọn Project trước —</option>
                                 </select>
+                                <div class="form-text" id="categoriesHint">
+                                    Chỉ hiện category khả dụng của project đang chọn.
+                                </div>
                                 <div id="categoriesError" class="small text-danger mt-1 d-none"></div>
                             </div>
                             <div class="col-12">
@@ -480,10 +866,13 @@
                             </div>
                             <div class="info-text mt-2">
                                 <i class="bi bi-info-circle"></i>
-                                Các trường hỗ trợ: <code>summary</code>, <code>description</code>,
-                                <code>category_id</code>, <code>severity</code>, <code>priority</code>,
-                                <code>platform</code>, <code>os</code>, <code>version</code>,
-                                <code>handler_id</code>, <code>steps_to_reproduce</code>
+                                Project &amp; Category chọn trên form phía trên (không cần ghi trong JSON).
+                                Trường JSON: <code>summary</code>, <code>description</code>,
+                                <code>severity</code>, <code>priority</code>, <code>reproducibility</code>,
+                                <code>eta</code>, <code>platform</code>, <code>os</code>, <code>os_build</code>,
+                                <code>due_date</code>, <code>status</code>, <code>resolution</code>,
+                                <code>view_state</code>, <code>steps_to_reproduce</code>,
+                                <code>additional_info</code>, <code>tag_string</code>
                             </div>
                         </div>
                         <div class="mt-3">
@@ -510,57 +899,81 @@
     <!-- ==================== PHASE 2: IMPORTING ==================== -->
     <div class="import-phase" id="phase2">
         <div class="row justify-content-center">
-            <div class="col-lg-10 col-xl-9">
+            <div class="col-12 col-xl-11">
 
-                <div class="card main-card mb-4">
-                    <div class="card-header card-header-mantis d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-hourglass-split me-2"></i>Đang import...</span>
-                        <span class="badge bg-light text-dark" id="phase2Counter">0 / 0</span>
+                <div class="card main-card mb-4 import-overlay-pulse">
+                    <div class="card-header card-header-mantis d-flex justify-content-between align-items-center py-3">
+                        <span class="fs-5">
+                            <i class="bi bi-hourglass-split me-2"></i>Đang import...
+                        </span>
+                        <span class="badge bg-light text-dark fs-6 px-3 py-2" id="phase2Counter">0 / 0</span>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
 
-                        <!-- Progress -->
+                        <!-- Progress (animated) -->
                         <div class="progress-wrapper">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="fw-500 small">Tiến độ import</span>
-                                <span class="fw-600" style="color:var(--mantis-blue)" id="progressPercent">0%</span>
+                            <div class="d-flex justify-content-between align-items-end mb-3">
+                                <div>
+                                    <div class="fw-700" style="font-size:1.1rem;color:var(--mantis-blue-dark);">
+                                        Tiến độ import
+                                    </div>
+                                    <div class="text-muted small mt-1" id="progressSubLabel">
+                                        Chuẩn bị gửi từng issue lên MantisBT…
+                                    </div>
+                                </div>
+                                <div class="progress-percent-big" id="progressPercent">0%</div>
                             </div>
-                            <div class="progress" style="height:12px;">
-                                <div class="progress-bar progress-bar-mantis" id="progressBar"
-                                     style="width:0%"></div>
+                            <div class="progress-track">
+                                <div class="progress-bar-mantis" id="progressBar" style="width:0%"></div>
                             </div>
-                            <div class="d-flex gap-3 mt-2 flex-wrap">
+                            <div class="d-flex gap-3 mt-3 flex-wrap">
                                 <span class="stat-badge stat-total">
                                     <i class="bi bi-list-ul"></i>
                                     Tổng: <strong id="statTotal">0</strong>
                                 </span>
                                 <span class="stat-badge stat-success">
-                                    <i class="bi bi-check-circle"></i>
+                                    <i class="bi bi-check-circle-fill"></i>
                                     Thành công: <strong id="statSuccess">0</strong>
                                 </span>
                                 <span class="stat-badge stat-failed">
-                                    <i class="bi bi-x-circle"></i>
+                                    <i class="bi bi-x-circle-fill"></i>
                                     Thất bại: <strong id="statFailed">0</strong>
                                 </span>
+                            </div>
+
+                            <div class="current-item-box" id="currentItemBox">
+                                <div class="item-icon is-running" id="currentItemIcon">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="current-item-label">Đang xử lý</div>
+                                    <div class="current-item-text" id="currentItemText">Đang kết nối tới MantisBT…</div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Stream status -->
                         <div class="stream-status" id="streamStatus">
-                            <span class="spinner-border spinner-border-sm spinner-dark" role="status"></span>
+                            <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
                             <span id="streamMsg">Đang kết nối...</span>
                         </div>
 
-                        <!-- Results Table -->
-                        <div class="table-responsive table-scroll border rounded" style="max-height:420px;">
-                            <table class="table table-sm table-hover mb-0" id="resultTable">
-                                <thead style="position:sticky;top:0;z-index:1;">
-                                    <tr style="background:#e8eff6;">
-                                        <th style="width:45px;">#</th>
+                        <!-- Results Table (large, readable) -->
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h5 class="mb-0 fw-bold" style="color:var(--mantis-blue-dark);">
+                                <i class="bi bi-table me-2"></i>Bảng kết quả realtime
+                            </h5>
+                            <span class="text-muted small">Tự cuộn khi có dòng mới</span>
+                        </div>
+                        <div class="result-table-wrap table-responsive" id="resultTableScroll">
+                            <table class="table table-hover result-table-lg" id="resultTable">
+                                <thead style="position:sticky;top:0;z-index:2;">
+                                    <tr>
+                                        <th class="col-num">#</th>
                                         <th>Summary</th>
-                                        <th style="width:100px;">Trạng thái</th>
-                                        <th style="width:80px;">Bug ID</th>
-                                        <th style="width:200px;">Lỗi</th>
+                                        <th class="col-status">Trạng thái</th>
+                                        <th class="col-bugid">Bug ID</th>
+                                        <th class="col-error">Chi tiết / Lỗi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="resultBody"></tbody>
@@ -577,46 +990,46 @@
     <!-- ==================== PHASE 3: DONE ==================== -->
     <div class="import-phase" id="phase3">
         <div class="row justify-content-center">
-            <div class="col-lg-10 col-xl-9">
+            <div class="col-12 col-xl-11">
 
                 <!-- Summary -->
-                <div class="card main-card mb-4">
-                    <div class="card-header card-header-mantis">
-                        <i class="bi bi-check-circle-fill me-2"></i>Kết quả Import
+                <div class="card main-card mb-4 import-overlay-pulse">
+                    <div class="card-header card-header-mantis py-3">
+                        <span class="fs-5"><i class="bi bi-check-circle-fill me-2"></i>Kết quả Import</span>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
 
-                        <div class="row g-4">
+                        <div class="row g-4 align-items-center">
                             <div class="col-md-3 text-center">
                                 <div class="rate-circle mb-2 mx-auto" id="rateCircle">0%</div>
-                                <div class="small text-muted fw-500">Tỷ lệ thành công</div>
+                                <div class="text-muted fw-600">Tỷ lệ thành công</div>
                             </div>
                             <div class="col-md-9">
                                 <div class="row g-3">
                                     <div class="col-sm-4">
-                                        <div class="summary-card">
+                                        <div class="summary-card mb-0">
                                             <div class="small text-muted">Tổng số bug</div>
-                                            <div class="fs-4 fw-bold" style="color:var(--mantis-blue)"
+                                            <div class="fs-2 fw-bold" style="color:var(--mantis-blue)"
                                                  id="finalTotal">0</div>
                                         </div>
                                     </div>
                                     <div class="col-sm-4">
-                                        <div class="summary-card summary-success">
+                                        <div class="summary-card summary-success mb-0">
                                             <div class="small text-muted">Thành công</div>
-                                            <div class="fs-4 fw-bold" style="color:var(--mantis-green)"
+                                            <div class="fs-2 fw-bold" style="color:var(--mantis-green)"
                                                  id="finalSuccess">0</div>
                                         </div>
                                     </div>
                                     <div class="col-sm-4">
-                                        <div class="summary-card summary-failed">
+                                        <div class="summary-card summary-failed mb-0">
                                             <div class="small text-muted">Thất bại</div>
-                                            <div class="fs-4 fw-bold" style="color:var(--mantis-red)"
+                                            <div class="fs-2 fw-bold" style="color:var(--mantis-red)"
                                                  id="finalFailed">0</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-3" id="baseUrlLine" style="display:none;">
-                                    <a href="#" id="mantisLink" target="_blank" class="btn btn-outline-mantis btn-sm">
+                                    <a href="#" id="mantisLink" target="_blank" class="btn btn-outline-mantis">
                                         <i class="bi bi-box-arrow-up-right me-1"></i>Mở MantisBT
                                     </a>
                                 </div>
@@ -628,20 +1041,20 @@
 
                 <!-- Full Results Table -->
                 <div class="card main-card mb-4">
-                    <div class="card-header card-header-mantis d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-list-ul me-2"></i>Chi tiết kết quả</span>
-                        <span class="badge bg-secondary" id="finalCount"></span>
+                    <div class="card-header card-header-mantis d-flex justify-content-between align-items-center py-3">
+                        <span class="fs-5"><i class="bi bi-list-ul me-2"></i>Chi tiết kết quả</span>
+                        <span class="badge bg-light text-dark fs-6 px-3 py-2" id="finalCount"></span>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive table-scroll" style="max-height:400px;">
-                            <table class="table table-sm table-hover mb-0">
-                                <thead style="position:sticky;top:0;z-index:1;background:#e8eff6;">
+                    <div class="card-body p-3">
+                        <div class="result-table-wrap table-responsive">
+                            <table class="table table-hover result-table-lg mb-0">
+                                <thead style="position:sticky;top:0;z-index:2;">
                                     <tr>
-                                        <th style="width:45px;">#</th>
+                                        <th class="col-num">#</th>
                                         <th>Summary</th>
-                                        <th style="width:110px;">Trạng thái</th>
-                                        <th style="width:90px;">Bug ID</th>
-                                        <th style="width:220px;">Lỗi</th>
+                                        <th class="col-status">Trạng thái</th>
+                                        <th class="col-bugid">Bug ID</th>
+                                        <th class="col-error">Chi tiết / Lỗi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="finalResultBody"></tbody>
@@ -652,7 +1065,7 @@
 
                 <!-- Reload -->
                 <div class="text-center mb-4">
-                    <button class="btn btn-mantis btn-lg" onclick="resetToPhase1()">
+                    <button class="btn btn-mantis btn-lg px-5" onclick="resetToPhase1()">
                         <i class="bi bi-arrow-repeat me-2"></i>Tải lại &amp; Import tiếp
                     </button>
                 </div>
@@ -680,7 +1093,7 @@ let jsonContent = '';
 
 // Force reload on script version change (avoid stale browser cache)
 (function() {
-    const SCRIPT_VERSION = 'v20260630-1';
+    const SCRIPT_VERSION = 'v20260716-overlay-import-2';
     const stored = sessionStorage.getItem('script_version');
     if (stored && stored !== SCRIPT_VERSION) {
         sessionStorage.setItem('script_version', SCRIPT_VERSION);
@@ -691,17 +1104,200 @@ let jsonContent = '';
 })();
 let selectedProjectId = '0';
 let selectedCategoryId = '0';
+let _progressAnimTarget = 0;
+let _progressAnimCurrent = 0;
+let _progressAnimRaf = null;
+let _lastDonePayload = null;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function setProgressSmooth(percent) {
+    // Cập nhật cả bar phase2 (nếu còn) + overlay
+    const bars = [
+        document.getElementById('progressBar'),
+        document.getElementById('overlayBar'),
+    ].filter(Boolean);
+    const labels = [
+        document.getElementById('progressPercent'),
+        document.getElementById('overlayPercent'),
+    ].filter(Boolean);
+    if (!bars.length) return;
+
+    _progressAnimTarget = Math.max(0, Math.min(100, Number(percent) || 0));
+    if (_progressAnimRaf) return;
+
+    const step = () => {
+        const diff = _progressAnimTarget - _progressAnimCurrent;
+        if (Math.abs(diff) < 0.2) {
+            _progressAnimCurrent = _progressAnimTarget;
+            bars.forEach(bar => {
+                bar.style.width = _progressAnimCurrent + '%';
+                if (_progressAnimCurrent >= 100) bar.classList.add('is-done');
+            });
+            labels.forEach(label => {
+                label.textContent = Math.round(_progressAnimCurrent) + '%';
+            });
+            _progressAnimRaf = null;
+            return;
+        }
+        _progressAnimCurrent += diff * 0.14;
+        bars.forEach(bar => { bar.style.width = _progressAnimCurrent + '%'; });
+        labels.forEach(label => {
+            label.textContent = Math.round(_progressAnimCurrent) + '%';
+        });
+        _progressAnimRaf = requestAnimationFrame(step);
+    };
+    _progressAnimRaf = requestAnimationFrame(step);
+}
+
+function resetProgressUI() {
+    if (_progressAnimRaf) {
+        cancelAnimationFrame(_progressAnimRaf);
+        _progressAnimRaf = null;
+    }
+    _progressAnimTarget = 0;
+    _progressAnimCurrent = 0;
+    _lastDonePayload = null;
+
+    ['progressBar', 'overlayBar'].forEach(id => {
+        const bar = document.getElementById(id);
+        if (bar) {
+            bar.classList.remove('is-done');
+            bar.style.width = '0%';
+        }
+    });
+    ['progressPercent', 'overlayPercent'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '0%';
+    });
+    ['progressSubLabel', 'overlaySubLabel'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = 'Chuẩn bị gửi từng issue lên MantisBT…';
+    });
+    updateCurrentItem('Đang kết nối tới MantisBT…', true);
+
+    const body = document.getElementById('overlayResultBody');
+    if (body) body.innerHTML = '';
+    const rb = document.getElementById('resultBody');
+    if (rb) rb.innerHTML = '';
+
+    ['statTotal', 'statSuccess', 'statFailed', 'overlayTotal', 'overlaySuccess', 'overlayFailed']
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0';
+        });
+    ['phase2Counter', 'overlayCounter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '0 / 0';
+    });
+
+    const banner = document.getElementById('overlayDoneBanner');
+    if (banner) {
+        banner.classList.remove('is-show', 'ok', 'bad', 'warn');
+    }
+    const foot = document.getElementById('overlayFoot');
+    if (foot) foot.style.display = 'none';
+    const spinner = document.getElementById('overlaySpinner');
+    if (spinner) spinner.style.display = '';
+    const title = document.getElementById('overlayTitle');
+    if (title) title.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Đang import…';
+}
+
+function openImportOverlay() {
+    const ov = document.getElementById('importOverlay');
+    if (!ov) return;
+    ov.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImportOverlay(goReset) {
+    const ov = document.getElementById('importOverlay');
+    if (ov) ov.classList.remove('is-open');
+    document.body.style.overflow = '';
+    if (goReset) {
+        resetToPhase1();
+    } else if (_lastDonePayload) {
+        // Giữ phase 3 kết quả phía sau nếu đã xong
+        try { showPhase3(_lastDonePayload, true); } catch (e) { showPhase(1); }
+    } else {
+        showPhase(1);
+    }
+}
+
+function updateCurrentItem(summary, isRunning) {
+    const pairs = [
+        ['currentItemIcon', 'currentItemText'],
+        ['overlayCurrentIcon', 'overlayCurrentText'],
+    ];
+    pairs.forEach(([iconId, textId]) => {
+        const text = document.getElementById(textId);
+        const icon = document.getElementById(iconId);
+        if (text) text.textContent = summary || '—';
+        if (!icon) return;
+        if (isRunning) {
+            icon.className = 'item-icon is-running';
+            icon.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
+        } else {
+            icon.className = 'item-icon';
+            icon.innerHTML = '<i class="bi bi-check-lg"></i>';
+        }
+    });
+}
+
+function buildResultRowHtml(result, baseUrl) {
+    const isOk = result.status === 'success';
+    const rowClass = (isOk ? 'result-row-success' : 'result-row-failed') + ' result-row-enter';
+    const badge = isOk
+        ? '<span class="badge-status badge-success"><i class="bi bi-check-circle-fill"></i>Thành công</span>'
+        : '<span class="badge-status badge-failed"><i class="bi bi-x-circle-fill"></i>Thất bại</span>';
+    const url = baseUrl || mantisUrl;
+    const bugLink = result.bug_id
+        ? `<a href="${url}/bug_view_page.php?id=${result.bug_id}" target="_blank" rel="noopener">#${result.bug_id}</a>`
+        : '—';
+    return {
+        rowClass,
+        html: `
+            <td class="col-num">${result.row}</td>
+            <td class="col-summary" title="${escapeHtml(result.summary || '')}">${escapeHtml(result.summary || '')}</td>
+            <td class="col-status">${badge}</td>
+            <td class="col-bugid">${bugLink}</td>
+            <td class="col-error" title="${escapeHtml(result.error || '')}">${escapeHtml(result.error || (isOk ? 'OK' : ''))}</td>
+        `
+    };
+}
+
+function appendResultRow(result, baseUrl) {
+    const built = buildResultRowHtml(result, baseUrl);
+    ['resultBody', 'overlayResultBody'].forEach(id => {
+        const tbody = document.getElementById(id);
+        if (!tbody) return;
+        const tr = document.createElement('tr');
+        tr.className = built.rowClass;
+        tr.innerHTML = built.html;
+        tbody.appendChild(tr);
+    });
+    const scrollEl = document.getElementById('overlayTableScroll')
+        || document.getElementById('resultTableScroll');
+    if (scrollEl) {
+        scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
+    }
+}
 
 // ===== Phase Navigation =====
 function showPhase(n) {
     document.querySelectorAll('.import-phase').forEach(el => el.classList.remove('active'));
-    document.getElementById('phase' + n).classList.add('active');
+    const phase = document.getElementById('phase' + n);
+    if (phase) phase.classList.add('active');
     currentPhase = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ===== Toast Notifications =====
-function showToast(msg, type = 'info') {
+// ===== Toast Notifications (to, dễ nhìn) =====
+function showToast(msg, type = 'info', opts = {}) {
     const container = document.getElementById('toastContainer');
+    if (!container) return;
     const colors = {
         success: ['#d4edda', '#155724', 'bi-check-circle-fill'],
         error: ['#f8d7da', '#721c24', 'bi-x-circle-fill'],
@@ -709,20 +1305,21 @@ function showToast(msg, type = 'info') {
         warning: ['#fff3cd', '#856404', 'bi-exclamation-triangle-fill'],
     };
     const [bg, text, icon] = colors[type] || colors.info;
-    const id = 'toast-' + Date.now();
+    const id = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+    const ttl = opts.ttl || 7000;
     const html = `
-        <div id="${id}" class="toast align-items-center border-0 shadow show mb-2"
-             style="background:${bg};color:${text};border-radius:8px;min-width:280px;"
+        <div id="${id}" class="toast toast-big align-items-center border-0 shadow show mb-2"
+             style="background:${bg};color:${text};"
              role="alert">
-            <div class="d-flex p-2">
-                <i class="bi ${icon} me-2 fs-5"></i>
-                <div class="small" style="font-size:.85rem;">${msg}</div>
-                <button class="btn-close btn-close-${type}" style="font-size:.6rem;margin-left:auto;"
-                        onclick="document.getElementById('${id}').remove()"></button>
+            <div class="d-flex align-items-start p-3 w-100">
+                <i class="bi ${icon} me-3" style="font-size:1.6rem;line-height:1;"></i>
+                <div class="toast-msg flex-grow-1">${msg}</div>
+                <button type="button" class="btn-close ms-2" style="font-size:.75rem;"
+                        onclick="document.getElementById('${id}')?.remove()"></button>
             </div>
         </div>`;
     container.insertAdjacentHTML('beforeend', html);
-    setTimeout(() => { const el = document.getElementById(id); if(el) el.remove(); }, 4000);
+    setTimeout(() => { const el = document.getElementById(id); if (el) el.remove(); }, ttl);
 }
 
 // ===== Connection Test =====
@@ -846,25 +1443,53 @@ async function reloadProjects() {
     }
 }
 
-// ===== Categories Dropdown =====
-function populateCategories(categories, categoriesError) {
+// ===== Categories Dropdown (chỉ category của Project đã chọn) =====
+function resetCategoryDropdown(placeholder) {
     const sel = document.getElementById('mantisCategory');
     const btnReload = document.getElementById('btnReloadCategories');
     const errEl = document.getElementById('categoriesError');
+    const hint = document.getElementById('categoriesHint');
+    sel.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '0';
+    opt.textContent = placeholder || '— Chọn Project trước —';
+    sel.appendChild(opt);
+    sel.disabled = true;
+    sel.value = '0';
+    selectedCategoryId = '0';
+    btnReload.disabled = true;
+    errEl.classList.add('d-none');
+    if (hint) {
+        hint.textContent = 'Chỉ hiện category khả dụng của project đang chọn.';
+    }
+}
+
+function populateCategories(categories, categoriesError, projectId) {
+    const sel = document.getElementById('mantisCategory');
+    const btnReload = document.getElementById('btnReloadCategories');
+    const errEl = document.getElementById('categoriesError');
+    const hint = document.getElementById('categoriesHint');
+    const projSel = document.getElementById('mantisProject');
+    const projName = projSel && projSel.selectedOptions[0]
+        ? projSel.selectedOptions[0].textContent.trim()
+        : (`ID ${projectId || selectedProjectId}`);
 
     sel.innerHTML = '';
     if (!categories || categories.length === 0) {
         sel.disabled = true;
         const opt = document.createElement('option');
         opt.value = '0';
-        opt.textContent = '— Không có category nào để chọn —';
+        opt.textContent = '— Project này chưa có category —';
         sel.appendChild(opt);
-        btnReload.disabled = true;
+        btnReload.disabled = !(selectedProjectId && selectedProjectId !== '0');
         if (categoriesError) {
             errEl.textContent = categoriesError;
             errEl.classList.remove('d-none');
         } else {
             errEl.classList.add('d-none');
+        }
+        if (hint) {
+            hint.textContent = `Không có category cho project: ${projName}`;
         }
         selectedCategoryId = '0';
         return;
@@ -874,30 +1499,48 @@ function populateCategories(categories, categoriesError) {
     btnReload.disabled = false;
     errEl.classList.add('d-none');
 
-    // Mặc định thêm lựa chọn "Mặc định / Tự chọn"
     const defOpt = document.createElement('option');
     defOpt.value = '0';
-    defOpt.textContent = '— Chọn Category mặc định (Tùy chọn) —';
+    defOpt.textContent = '— Chọn category (của project đang chọn) —';
     sel.appendChild(defOpt);
 
     categories.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = `${c.name} (ID ${c.id})`;
+        // name đã được clean; is_global đánh dấu category dùng chung (All Projects)
+        const tag = c.is_global ? ' · global' : '';
+        opt.textContent = `${c.name} (ID ${c.id}${tag})`;
+        opt.title = c.label || c.name;
         sel.appendChild(opt);
     });
 
-    sel.value = '0';
-    selectedCategoryId = '0';
+    // Tự chọn category đầu tiên để import nhanh (vẫn đổi được)
+    if (categories.length === 1) {
+        sel.value = categories[0].id;
+        selectedCategoryId = String(categories[0].id);
+    } else {
+        sel.value = '0';
+        selectedCategoryId = '0';
+    }
+
+    if (hint) {
+        hint.textContent = `${categories.length} category của project: ${projName}`;
+    }
 }
 
 async function reloadCategories() {
     if (!sessionId) { showToast('Bạn cần đăng nhập trước', 'warning'); return; }
-    if (!selectedProjectId || selectedProjectId === '0') { return; }
+    if (!selectedProjectId || selectedProjectId === '0') {
+        resetCategoryDropdown('— Chọn Project trước —');
+        return;
+    }
     const btn = document.getElementById('btnReloadCategories');
     const spinner = document.getElementById('categoriesSpinner');
     btn.disabled = true;
     spinner.classList.remove('d-none');
+    // Xóa list cũ ngay khi đổi project để không lẫn category project khác
+    resetCategoryDropdown('— Đang tải category của project… —');
+    document.getElementById('mantisCategory').disabled = true;
     try {
         const resp = await fetch('/api/categories', {
             method: 'POST',
@@ -905,13 +1548,25 @@ async function reloadCategories() {
             body: JSON.stringify({ session_id: sessionId, project_id: selectedProjectId })
         });
         const data = await resp.json();
-        populateCategories(data.categories || [], data.message);
-        if (data.success) showToast(`Đã tải ${data.categories.length} category`, 'success');
-        else showToast(data.message || 'Không lấy được danh sách category', 'warning');
+        // Chỉ nhận list nếu đúng project đang chọn (tránh race khi đổi project nhanh)
+        if (String(data.project_id || selectedProjectId) !== String(selectedProjectId)) {
+            return;
+        }
+        populateCategories(
+            data.categories || [],
+            data.success ? null : (data.message || 'Không lấy được category'),
+            data.project_id || selectedProjectId
+        );
+        if (data.success) {
+            showToast(`Đã tải ${data.categories.length} category của project đã chọn`, 'success');
+        } else {
+            showToast(data.message || 'Không lấy được danh sách category', 'warning');
+        }
     } catch (e) {
-        showToast('Lỗi khi tải lại category: ' + e.message, 'error');
+        resetCategoryDropdown('— Lỗi tải category —');
+        showToast('Lỗi khi tải category: ' + e.message, 'error');
     } finally {
-        btn.disabled = false;
+        btn.disabled = !(selectedProjectId && selectedProjectId !== '0' && sessionId);
         spinner.classList.add('d-none');
     }
 }
@@ -949,84 +1604,98 @@ async function logout() {
     }
 }
 
+// Mẫu JSON gọn giống samples/sample_test.json
+// Project + Category chọn trên UI — không ghi project_id / category_id trong JSON
 const SAMPLE_JSON = [
   {
-    "project_id": "0",
-    "m_id": "0",
-    "category_id": "1",
+    "summary": "Lọc View Issues theo tag không trả về kết quả dù issue có tag",
+    "description": "Khi gắn tag 'regression' cho issue và lọc View Issues theo tag đó, danh sách trống. Issue vẫn hiện khi bỏ filter tag. Dữ liệu tag trong DB vẫn còn.",
+    "severity": "major",
+    "priority": "high",
+    "reproducibility": "always",
+    "eta": "< 1 day",
+    "platform": "Web",
+    "os": "Windows 11",
+    "os_build": "23H2",
+    "due_date": "2026-07-21",
+    "status": "new",
+    "resolution": "open",
+    "view_state": "public",
+    "steps_to_reproduce": "1. Mở một issue bất kỳ.\n2. Gắn tag regression.\n3. Vào View Issues.\n4. Filter theo tag = regression.\n5. Quan sát: danh sách rỗng dù issue vừa gắn tag.",
+    "additional_info": "Tái hiện trên Chrome và Edge. Filter theo status/category vẫn hoạt động bình thường.",
+    "tag_string": "filter, tag, view-issues"
+  },
+  {
+    "summary": "Export CSV thiếu cột Handler và Due Date",
+    "description": "File CSV export từ View Issues thiếu hai cột Handler và Due Date dù đã bật cột tương ứng trên UI. Các cột Summary, Status, Severity vẫn export đúng.",
+    "severity": "minor",
+    "priority": "normal",
+    "reproducibility": "always",
+    "eta": "2-3 days",
+    "platform": "Web",
+    "os": "Windows 10",
+    "os_build": "22H2",
+    "due_date": "2026-07-25",
+    "status": "new",
+    "resolution": "open",
+    "view_state": "public",
+    "steps_to_reproduce": "1. Vào View Issues.\n2. Bật cột Handler và Due Date trong Manage Columns.\n3. Bấm Export CSV.\n4. Mở file bằng Excel.\n5. Kiểm tra header — thiếu Handler, Due Date.",
+    "additional_info": "Export Excel XML cũng thiếu 2 cột này. Có thể map cột CSV chưa đồng bộ với column preferences.",
+    "tag_string": "export, csv, columns"
+  },
+  {
+    "summary": "Không gửi được Reminder khi issue ở trạng thái Closed",
+    "description": "Trang Send Reminder báo lỗi hoặc nút Submit không phản hồi khi issue đã Closed. Với issue status New/Assigned thì gửi reminder thành công.",
+    "severity": "text",
+    "priority": "low",
     "reproducibility": "always",
     "eta": "none",
+    "platform": "Web",
+    "os": "macOS",
+    "os_build": "Sonoma",
+    "due_date": "",
+    "status": "new",
+    "resolution": "open",
+    "view_state": "public",
+    "steps_to_reproduce": "1. Mở issue đã Closed.\n2. Chọn Send a Reminder.\n3. Chọn user nhận, nhập nội dung.\n4. Bấm Send.\n5. Quan sát lỗi / không gửi được.",
+    "additional_info": "Cần xác nhận business rule: Closed có cho phép reminder hay không. Nếu không cho phép nên có thông báo rõ.",
+    "tag_string": "reminder, closed, workflow"
+  },
+  {
+    "summary": "Clone issue không copy Steps To Reproduce",
+    "description": "Khi Clone Issue, các field Summary, Description, Category được copy nhưng Steps To Reproduce và Additional Info bị trống trên form clone và issue mới tạo.",
     "severity": "major",
     "priority": "normal",
-    "due_date": "",
-    "profile_id": "0",
-    "platform": "Chrome 125",
+    "reproducibility": "always",
+    "eta": "< 1 week",
+    "platform": "Web",
     "os": "Windows 11",
     "os_build": "23H2",
-    "product_version": "2.25.5",
-    "build": "",
-    "handler_id": "0",
+    "due_date": "2026-07-30",
     "status": "new",
     "resolution": "open",
-    "target_version": "",
-    "summary": "Đăng nhập thất bại không hiển thị thông báo lỗi",
-    "description": "Khi nhập sai mật khẩu, hệ thống chỉ load lại trang mà không hiển thị thông báo lỗi. Repro: 1) Vào trang login, 2) nhập sai mật khẩu 3 lần liên tiếp.",
-    "steps_to_reproduce": "1. Mở trang đăng nhập\n2. Nhập user hợp lệ + sai password\n3. Bấm Đăng nhập\n4. Quan sát: trang load lại nhưng không có alert/error",
-    "additional_info": "",
-    "tag_string": "login",
-    "view_state": "public"
+    "view_state": "public",
+    "steps_to_reproduce": "1. Mở issue có đầy đủ Steps To Reproduce + Additional Info.\n2. Bấm Clone.\n3. Kiểm tra form clone — 2 field trên trống.\n4. Submit clone.\n5. Mở issue mới — vẫn trống.",
+    "additional_info": "Attachments và Relationships có option copy riêng; Steps/Additional Info không có checkbox và cũng không được copy mặc định.",
+    "tag_string": "clone, steps, copy-fields"
   },
   {
-    "project_id": "0",
-    "m_id": "0",
-    "category_id": "2",
+    "summary": "Mobile: không cuộn được danh sách issue khi filter phức tạp",
+    "description": "Trên màn hình điện thoại, sau khi áp dụng nhiều điều kiện filter (status + severity + category), danh sách View Issues bị khóa cuộn dọc. Phải xoay ngang màn hình hoặc tắt filter mới cuộn được.",
+    "severity": "crash",
+    "priority": "high",
     "reproducibility": "sometimes",
-    "eta": "none",
-    "severity": "tweak",
-    "priority": "low",
-    "due_date": "",
-    "profile_id": "0",
-    "platform": "Firefox 126",
-    "os": "Ubuntu 22.04",
-    "os_build": "",
-    "product_version": "2.25.5",
-    "build": "",
-    "handler_id": "0",
+    "eta": "2-3 days",
+    "platform": "Mobile Web",
+    "os": "Android 14",
+    "os_build": "UP1A",
+    "due_date": "2026-07-23",
     "status": "new",
     "resolution": "open",
-    "target_version": "",
-    "summary": "Trang danh sách bug load chậm khi > 1000 records",
-    "description": "Khi project có hơn 1000 bug, trang view_all_bug_page.php mất 8-12s để load. Có vẻ do query không dùng index.",
-    "steps_to_reproduce": "1. Mở view_all_bug_page.php\n2. Lọc theo 1 project > 1000 bug\n3. Đo thời gian load",
-    "additional_info": "",
-    "tag_string": "performance",
-    "view_state": "public"
-  },
-  {
-    "project_id": "0",
-    "m_id": "0",
-    "category_id": "3",
-    "reproducibility": "N/A",
-    "eta": "none",
-    "severity": "trivial",
-    "priority": "low",
-    "due_date": "",
-    "profile_id": "0",
-    "platform": "Chrome 125",
-    "os": "Windows 11",
-    "os_build": "23H2",
-    "product_version": "2.25.5",
-    "build": "",
-    "handler_id": "0",
-    "status": "new",
-    "resolution": "open",
-    "target_version": "",
-    "summary": "Bug nhỏ: footer hiển thị sai năm (2025 thay vì 2026)",
-    "description": "Footer của trang login hiển thị © 2025 thay vì năm hiện tại.",
-    "steps_to_reproduce": "1. Mở trang login\n2. Cuộn xuống footer\n3. Quan sát năm",
-    "additional_info": "",
-    "tag_string": "cosmetic",
-    "view_state": "public"
+    "view_state": "public",
+    "steps_to_reproduce": "1. Mở View Issues trên Chrome Android.\n2. Mở Advanced Filters.\n3. Chọn Status=any, Severity=major+, Category=bất kỳ.\n4. Apply Filter.\n5. Thử vuốt dọc danh sách — không cuộn được.",
+    "additional_info": "iOS Safari cũng gặp khi filter > 3 điều kiện. Console có warning overflow:hidden trên container.",
+    "tag_string": "mobile, filter, scroll, ui"
   }
 ];
 
@@ -1284,37 +1953,60 @@ async function startImport() {
         return;
     }
 
-    // Reset phase 2 UI
-    document.getElementById('progressBar').style.width = '0%';
-    document.getElementById('progressPercent').textContent = '0%';
-    document.getElementById('statTotal').textContent = '0';
-    document.getElementById('statSuccess').textContent = '0';
-    document.getElementById('statFailed').textContent = '0';
-    document.getElementById('phase2Counter').textContent = '0 / 0';
-    document.getElementById('resultBody').innerHTML = '';
-    document.getElementById('streamMsg').textContent = 'Đang kết nối...';
+    // Mở overlay ngay — user chắc chắn thấy hiệu ứng
+    resetProgressUI();
     allResults = [];
     isImporting = true;
-
     showPhase(2);
+    openImportOverlay();
+    setStreamMsg('Đang kết nối server…');
+    await sleep(50);
+    setProgressSmooth(3);
 
     try {
         const response = await fetch('/api/import', {
             method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    url, username: user, password: pass,
-                    json_data: jsonContent,
-                    delay,
-                    session_id: sessionId,
-                    project_id: projectId,
-                    category_id: selectedCategoryId
-                })
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'text/event-stream',
+            },
+            body: JSON.stringify({
+                url, username: user, password: pass,
+                json_data: jsonContent,
+                delay,
+                session_id: sessionId,
+                project_id: projectId,
+                category_id: selectedCategoryId
+            })
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        if (!response.body) {
+            throw new Error('Trình duyệt không hỗ trợ stream body');
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        // Hàng đợi sự kiện: dù SSE dồn 1 cục vẫn animate từng dòng
+        const queue = [];
+
+        const pumpQueue = (async () => {
+            while (isImporting || queue.length) {
+                if (!queue.length) {
+                    await sleep(40);
+                    continue;
+                }
+                const data = queue.shift();
+                await handleStreamEvent(data);
+                // Nhịp hiển thị: mỗi issue ~0.45s để bar + bảng chạy rõ
+                if (data.type === 'progress') await sleep(450);
+                else if (data.type === 'status') await sleep(200);
+                else if (data.type === 'done') await sleep(600);
+            }
+        })();
 
         while (true) {
             const { done, value } = await reader.read();
@@ -1327,42 +2019,105 @@ async function startImport() {
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     try {
-                        const data = JSON.parse(line.slice(6));
-                        handleStreamEvent(data);
-                    } catch(e) { /* ignore parse errors */ }
+                        queue.push(JSON.parse(line.slice(6)));
+                    } catch (e) { /* ignore */ }
                 }
             }
         }
 
-        // Process remaining buffer
         if (buffer.startsWith('data: ')) {
             try {
-                const data = JSON.parse(buffer.slice(6));
-                handleStreamEvent(data);
-            } catch(e) {}
+                queue.push(JSON.parse(buffer.slice(6)));
+            } catch (e) {}
         }
 
-    } catch(e) {
-        showToast('Lỗi kết nối: ' + e.message, 'error');
-        showPhase(1);
+        isImporting = false;
+        await pumpQueue;
+
+        // Nếu server không gửi done (lỗi lạ) — vẫn hiện bảng đã có
+        if (!_lastDonePayload && allResults.length) {
+            await handleStreamEvent({
+                type: 'done',
+                final: true,
+                total: allResults.length,
+                success_count: allResults.filter(r => r.status === 'success').length,
+                failed_count: allResults.filter(r => r.status !== 'success').length,
+                success_rate: 0,
+                base_url: mantisUrl,
+                results: allResults,
+            });
+        }
+
+    } catch (e) {
+        isImporting = false;
+        setStreamMsg('Lỗi: ' + e.message);
+        updateCurrentItem('Lỗi kết nối: ' + e.message, false);
+        showToast('Lỗi kết nối: ' + e.message, 'error', { ttl: 9000 });
+        const foot = document.getElementById('overlayFoot');
+        if (foot) foot.style.display = 'flex';
+        const title = document.getElementById('overlayTitle');
+        if (title) title.innerHTML = '<i class="bi bi-x-circle me-2"></i>Import lỗi';
     }
 
     isImporting = false;
 }
 
-function handleStreamEvent(data) {
+function setStreamMsg(msg) {
+    ['streamMsg', 'overlayStreamMsg'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = msg;
+    });
+}
+
+function setStats(total, success, failed, rowLabel) {
+    const map = {
+        statTotal: total,
+        overlayTotal: total,
+        statSuccess: success,
+        overlaySuccess: success,
+        statFailed: failed,
+        overlayFailed: failed,
+    };
+    Object.entries(map).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    });
+    if (rowLabel != null) {
+        ['phase2Counter', 'overlayCounter'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = rowLabel;
+        });
+    }
+}
+
+async function handleStreamEvent(data) {
     const type = data.type;
 
     if (type === 'status') {
-        document.getElementById('streamMsg').textContent = data.message;
+        setStreamMsg(data.message);
+        ['progressSubLabel', 'overlaySubLabel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = data.message;
+        });
+        updateCurrentItem(data.message, true);
+        if (data.step === 'login') setProgressSmooth(6);
+        else if (data.step === 'parse') setProgressSmooth(12);
+        else if (data.step === 'import') setProgressSmooth(Math.max(_progressAnimTarget, 15));
         return;
     }
 
     if (type === 'error') {
-        document.getElementById('streamMsg').innerHTML =
-            `<i class="bi bi-exclamation-triangle text-warning me-1"></i>${data.message}`;
+        setStreamMsg(data.message);
+        updateCurrentItem(data.message, false);
         if (data.final) {
             isImporting = false;
+            const title = document.getElementById('overlayTitle');
+            if (title) title.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Import dừng / lỗi';
+            const foot = document.getElementById('overlayFoot');
+            if (foot) foot.style.display = 'flex';
+            const spinner = document.getElementById('overlaySpinner');
+            if (spinner) spinner.style.display = 'none';
+            showToast(data.message, 'error', { ttl: 10000 });
         }
         return;
     }
@@ -1370,100 +2125,151 @@ function handleStreamEvent(data) {
     if (type === 'progress') {
         const { row, total, progress, success_count, failed_count, result } = data;
 
-        // Update stats
-        document.getElementById('progressBar').style.width = progress + '%';
-        document.getElementById('progressPercent').textContent = progress + '%';
-        document.getElementById('statTotal').textContent = total;
-        document.getElementById('statSuccess').textContent = success_count;
-        document.getElementById('statFailed').textContent = failed_count;
-        document.getElementById('phase2Counter').textContent = `${row} / ${total}`;
-        document.getElementById('streamMsg').textContent = `Đang import dòng ${row}/${total}...`;
+        setProgressSmooth(progress);
+        setStats(total, success_count, failed_count, `${row} / ${total}`);
+        setStreamMsg(`Đang import dòng ${row}/${total}…`);
 
-        // Append row
-        const isOk = result.status === 'success';
-        const rowClass = isOk ? 'result-row-success' : 'result-row-failed';
-        const badge = isOk
-            ? '<span class="badge-status badge-success"><i class="bi bi-check"></i>Thành công</span>'
-            : '<span class="badge-status badge-failed"><i class="bi bi-x"></i>Thất bại</span>';
+        const subText = `Issue ${row}/${total} · Thành công ${success_count} · Lỗi ${failed_count}`;
+        ['progressSubLabel', 'overlaySubLabel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = subText;
+        });
+        updateCurrentItem(
+            result && result.summary
+                ? `#${result.row} — ${result.summary}`
+                : `Đang xử lý dòng ${row}/${total}`,
+            row < total
+        );
 
-        const bugLink = result.bug_id
-            ? `<a href="${mantisUrl}/bug_view_page.php?id=${result.bug_id}" target="_blank">#${result.bug_id}</a>`
-            : '—';
-
-        const tr = document.createElement('tr');
-        tr.className = rowClass;
-        tr.innerHTML = `
-            <td class="text-center text-muted" style="font-size:.8rem;">${result.row}</td>
-            <td><div style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                         title="${escapeHtml(result.summary)}">${escapeHtml(result.summary)}</div></td>
-            <td>${badge}</td>
-            <td class="fw-600">${bugLink}</td>
-            <td class="small" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                title="${escapeHtml(result.error || '')}">${escapeHtml(result.error || '')}</td>`;
-
-        document.getElementById('resultBody').appendChild(tr);
-
-        // Auto-scroll to bottom
-        const tbody = document.getElementById('resultBody');
-        tbody.parentElement.parentElement.scrollTop = tbody.parentElement.parentElement.scrollHeight;
-
-        allResults.push(result);
+        if (result) {
+            appendResultRow(result, mantisUrl);
+            allResults.push(result);
+        }
         return;
     }
 
     if (type === 'done' && data.final) {
-        showPhase3(data);
+        _lastDonePayload = data;
+        setProgressSmooth(100);
+        updateCurrentItem('Hoàn tất import!', false);
+        setStreamMsg('Import hoàn tất');
+        ['progressSubLabel', 'overlaySubLabel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'Đã xong — xem bảng kết quả bên dưới';
+        });
+
+        const spinner = document.getElementById('overlaySpinner');
+        if (spinner) spinner.style.display = 'none';
+
+        const {
+            total = 0,
+            success_count = 0,
+            failed_count = 0,
+            success_rate = 0,
+            base_url,
+            results = [],
+        } = data;
+
+        setStats(total, success_count, failed_count, `${total} / ${total}`);
+
+        // Banner kết quả LỚN trong overlay
+        const banner = document.getElementById('overlayDoneBanner');
+        const rateEl = document.getElementById('overlayDoneRate');
+        const titleEl = document.getElementById('overlayDoneTitle');
+        const subEl = document.getElementById('overlayDoneSub');
+        if (banner && rateEl && titleEl && subEl) {
+            banner.classList.remove('ok', 'bad', 'warn');
+            const cls = success_rate >= 80 ? 'ok' : (success_rate >= 50 ? 'warn' : 'bad');
+            banner.classList.add('is-show', cls);
+            rateEl.textContent = success_rate + '%';
+            titleEl.textContent = success_rate >= 80
+                ? 'Import thành công!'
+                : (success_rate >= 50 ? 'Import xong (có lỗi một phần)' : 'Import gặp nhiều lỗi');
+            subEl.textContent =
+                `Tổng ${total} · Thành công ${success_count} · Thất bại ${failed_count}`;
+        }
+
+        const title = document.getElementById('overlayTitle');
+        if (title) {
+            title.innerHTML = success_rate >= 80
+                ? '<i class="bi bi-check-circle-fill me-2"></i>Import thành công'
+                : '<i class="bi bi-flag-fill me-2"></i>Kết quả import';
+        }
+
+        if (base_url) {
+            const link = document.getElementById('overlayMantisLink');
+            if (link) {
+                link.href = base_url;
+                link.style.display = '';
+            }
+        }
+
+        // Đảm bảo bảng đủ rows (nếu stream chỉ gửi results ở done)
+        if (results.length && !document.getElementById('overlayResultBody')?.children.length) {
+            results.forEach(r => appendResultRow(r, base_url || mantisUrl));
+        }
+
+        const foot = document.getElementById('overlayFoot');
+        if (foot) foot.style.display = 'flex';
+
+        // Toast to + phase 3 phía sau
+        const toastMsg = success_rate >= 80
+            ? `Import hoàn tất! ${success_count}/${total} bug · ${success_rate}%`
+            : `Import xong: ${success_count}/${total} thành công, ${failed_count} lỗi (${success_rate}%)`;
+        showToast(toastMsg, success_rate >= 80 ? 'success' : (success_rate >= 50 ? 'warning' : 'error'), { ttl: 10000 });
+
+        showPhase3(data, true);
         return;
     }
 }
 
-function showPhase3(data) {
+function showPhase3(data, skipToast) {
     showPhase(3);
+    _lastDonePayload = data;
 
     const { total, success_count, failed_count, success_rate, base_url, results } = data;
 
-    document.getElementById('finalTotal').textContent = total;
-    document.getElementById('finalSuccess').textContent = success_count;
-    document.getElementById('finalFailed').textContent = failed_count;
-    document.getElementById('finalCount').textContent = total + ' kết quả';
+    const setTxt = (id, v) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = v;
+    };
+    setTxt('finalTotal', total);
+    setTxt('finalSuccess', success_count);
+    setTxt('finalFailed', failed_count);
+    setTxt('finalCount', total + ' kết quả');
 
     const rateEl = document.getElementById('rateCircle');
-    rateEl.textContent = success_rate + '%';
-    rateEl.className = 'rate-circle';
-    if (success_rate >= 80) rateEl.classList.add('rate-good');
-    else if (success_rate >= 50) rateEl.classList.add('rate-ok');
-    else rateEl.classList.add('rate-bad');
-
-    if (base_url) {
-        document.getElementById('baseUrlLine').style.display = 'block';
-        document.getElementById('mantisLink').href = base_url;
+    if (rateEl) {
+        rateEl.textContent = success_rate + '%';
+        rateEl.className = 'rate-circle';
+        if (success_rate >= 80) rateEl.classList.add('rate-good');
+        else if (success_rate >= 50) rateEl.classList.add('rate-ok');
+        else rateEl.classList.add('rate-bad');
     }
 
-    // Full results table
-    document.getElementById('finalResultBody').innerHTML = results.map(r => {
-        const isOk = r.status === 'success';
-        const rowClass = isOk ? 'result-row-success' : 'result-row-failed';
-        const badge = isOk
-            ? '<span class="badge-status badge-success"><i class="bi bi-check"></i>Thành công</span>'
-            : '<span class="badge-status badge-failed"><i class="bi bi-x"></i>Thất bại</span>';
-        const bugLink = r.bug_id
-            ? `<a href="${base_url}/bug_view_page.php?id=${r.bug_id}" target="_blank">#${r.bug_id}</a>`
-            : '—';
-        return `<tr class="${rowClass}">
-            <td class="text-center text-muted" style="font-size:.8rem;">${r.row}</td>
-            <td>${escapeHtml(r.summary)}</td>
-            <td>${badge}</td>
-            <td class="fw-600">${bugLink}</td>
-            <td class="small">${escapeHtml(r.error || '')}</td>
-        </tr>`;
-    }).join('');
+    if (base_url) {
+        const line = document.getElementById('baseUrlLine');
+        if (line) line.style.display = 'block';
+        const link = document.getElementById('mantisLink');
+        if (link) link.href = base_url;
+    }
 
-    if (success_rate >= 80) {
-        showToast(`Import hoàn tất! Tỷ lệ thành công: ${success_rate}%`, 'success');
-    } else if (success_rate >= 50) {
-        showToast(`Import xong với ${success_rate}% thành công. Có ${failed_count} lỗi cần kiểm tra.`, 'warning');
-    } else {
-        showToast(`Import gặp nhiều lỗi. Chỉ ${success_count}/${total} bug được tạo.`, 'error');
+    const body = document.getElementById('finalResultBody');
+    if (body) {
+        body.innerHTML = (results || []).map(r => {
+            const built = buildResultRowHtml(r, base_url);
+            return `<tr class="${built.rowClass}">${built.html}</tr>`;
+        }).join('');
+    }
+
+    if (!skipToast) {
+        if (success_rate >= 80) {
+            showToast(`Import hoàn tất! Tỷ lệ thành công: ${success_rate}%`, 'success', { ttl: 9000 });
+        } else if (success_rate >= 50) {
+            showToast(`Import xong với ${success_rate}% thành công. Có ${failed_count} lỗi cần kiểm tra.`, 'warning', { ttl: 9000 });
+        } else {
+            showToast(`Import gặp nhiều lỗi. Chỉ ${success_count}/${total} bug được tạo.`, 'error', { ttl: 9000 });
+        }
     }
 }
 
@@ -1473,6 +2279,11 @@ function resetToPhase1() {
     selectedProjectId = '0';
     selectedCategoryId = '0';
     allResults = [];
+    _lastDonePayload = null;
+    isImporting = false;
+    const ov = document.getElementById('importOverlay');
+    if (ov) ov.classList.remove('is-open');
+    document.body.style.overflow = '';
     document.getElementById('jsonTextarea').value = '';
     document.getElementById('jsonTextarea').classList.remove('is-valid', 'is-invalid');
     document.getElementById('textError').textContent = '';
@@ -1505,9 +2316,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listeners for projects and categories dropdowns
     document.getElementById('mantisProject').addEventListener('change', (e) => {
         selectedProjectId = e.target.value;
-        reloadCategories();
+        selectedCategoryId = '0';
+        // Reset category ngay — chỉ load category thuộc project mới chọn
+        if (!selectedProjectId || selectedProjectId === '0') {
+            resetCategoryDropdown('— Chọn Project trước —');
+        } else {
+            reloadCategories();
+        }
     });
-    
+
     document.getElementById('mantisCategory').addEventListener('change', (e) => {
         selectedCategoryId = e.target.value;
     });

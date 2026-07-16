@@ -20,7 +20,10 @@ REQUIRED_COLUMNS = ['summary', 'description']
 
 # Optional CSV columns
 OPTIONAL_COLUMNS = [
-    'severity', 'priority', 'platform', 'os', 'os_build',
-    'version', 'handler_id', 'steps_to_reproduce',
-    'additional_info', 'view_state', 'project_id', 'tags'
+    'category_id', 'reproducibility', 'eta', 'severity', 'priority',
+    'due_date', 'profile_id', 'platform', 'os', 'os_build',
+    'product_version', 'version', 'build', 'handler_id', 'monitors',
+    'status', 'resolution', 'target_version',
+    'steps_to_reproduce', 'additional_info', 'tag_string', 'tags',
+    'view_state', 'project_id', 'm_id',
 ]
