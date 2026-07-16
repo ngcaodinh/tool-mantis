@@ -432,6 +432,27 @@
                                         <li><code>tag_string</code> (String): Danh sách tags (phân cách bằng dấu phẩy).</li>
                                         <li><code>custom_field_&lt;id&gt;</code> (String): Custom Field (ví dụ: <code>custom_field_1</code>).</li>
                                     </ul>
+                                    <div class="mt-2 pt-2 border-top">
+                                        <strong class="text-primary">💡 Nhấp vào ô dưới để Copy nhanh câu lệnh Prompt đưa cho AI sinh JSON:</strong>
+                                        <textarea class="form-control form-control-sm mt-1 bg-white font-monospace" style="font-size:0.72rem; cursor:pointer;" rows="6" readonly onclick="copyPromptToClipboard(this)">Hãy sinh ra dữ liệu JSON dùng để import lỗi vào hệ thống MantisBT theo cấu trúc danh sách (array of objects). Mỗi phần tử biểu diễn một lỗi (issue) và chỉ được sử dụng các trường dữ liệu sau:
+- summary (String): Tiêu đề lỗi (bắt buộc)
+- description (String): Mô tả chi tiết lỗi (bắt buộc)
+- project_id (Int/String): ID dự án (Mặc định 0)
+- handler_id (Int/String): ID người được phân công (Mặc định 0)
+- severity (String/Int): Độ nghiêm trọng ("feature", "trivial", "text", "tweak", "minor", "major", "crash", "block")
+- priority (String/Int): Độ ưu tiên ("none", "low", "normal", "high", "urgent", "immediate")
+- reproducibility (String/Int): Tái hiện ("always", "sometimes", "random", "have not tried", "unable to duplicate", "N/A")
+- eta (String/Int): Thời gian hoàn thành ("none", "< 1 day", "2-3 days", "< 1 week", "< 1 month", "> 1 month")
+- platform (String): Thiết bị (Ví dụ: "PC", "Web", "iOS")
+- os / os_build / version / build (String): Hệ điều hành, bản build, phiên bản lỗi...
+- due_date (String): Hạn xử lý ("YYYY-MM-DD")
+- status (String/Int): Trạng thái ("new", "feedback", "acknowledged", "confirmed", "assigned", "resolved", "closed")
+- resolution (String/Int): Hướng xử lý ("open", "fixed", "reopened", "unable to reproduce", "not fixable", "duplicate", "no change required", "suspended", "won't fix")
+- view_state (String/Int): Hiển thị ("public", "private")
+- steps_to_reproduce (String): Các bước tái hiện (\n để xuống dòng)
+- additional_info (String): Thông tin thêm
+- tag_string (String): Các tags (cách nhau bởi dấu phẩy)</textarea>
+                                    </div>
                                 </div>
                             </details>
                         </div>
@@ -1471,6 +1492,16 @@ function resetToPhase1() {
     populateProjects([], '');
     populateCategories([], '');
     showPhase(1);
+}
+
+function copyPromptToClipboard(el) {
+    el.select();
+    try {
+        document.execCommand('copy');
+        showToast('Đã copy câu lệnh Prompt vào bộ nhớ tạm (Clipboard)!', 'success');
+    } catch (err) {
+        showToast('Không thể copy tự động, vui lòng chọn và Ctrl+C thủ công.', 'warning');
+    }
 }
 
 // ===== Initial state =====
